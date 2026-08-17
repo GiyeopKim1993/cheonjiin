@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+<rect width="400" height="300" rx="14" fill="#101418"/>
+<rect x="12" y="14" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="72.0" y="52.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅣ</text>
+<text x="123" y="29" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">1</text>
+<rect x="140" y="14" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="200.0" y="52.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㆍ</text>
+<text x="251" y="29" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">2</text>
+<rect x="268" y="14" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="328.0" y="52.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅡ</text>
+<text x="379" y="29" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">3</text>
+<rect x="12" y="84" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="72.0" y="122.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㄱㅋ</text>
+<text x="123" y="99" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">4</text>
+<rect x="140" y="84" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="200.0" y="122.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㄴㄹ</text>
+<text x="251" y="99" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">5</text>
+<rect x="268" y="84" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="328.0" y="122.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㄷㅌ</text>
+<text x="379" y="99" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">6</text>
+<rect x="12" y="154" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="72.0" y="192.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅂㅍ</text>
+<text x="123" y="169" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">7</text>
+<rect x="140" y="154" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="200.0" y="192.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅅㅎ</text>
+<text x="251" y="169" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">8</text>
+<rect x="268" y="154" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="328.0" y="192.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅈㅊ</text>
+<text x="379" y="169" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">9</text>
+<rect x="12" y="224" width="120" height="62" rx="9" fill="#2A333D" stroke="#2E3742" stroke-width="1"/>
+<text x="72.0" y="262.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="600" fill="#3B82F6" text-anchor="middle">획추가</text>
+<text x="123" y="239" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">*</text>
+<rect x="140" y="224" width="120" height="62" rx="9" fill="#1E252D" stroke="#2E3742" stroke-width="1"/>
+<text x="200.0" y="262.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="21" font-weight="600" fill="#F5F7FA" text-anchor="middle">ㅇㅁ</text>
+<text x="251" y="239" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">0</text>
+<rect x="268" y="224" width="120" height="62" rx="9" fill="#2A333D" stroke="#2E3742" stroke-width="1"/>
+<text x="328.0" y="262.0" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="15" font-weight="600" fill="#3B82F6" text-anchor="middle">쌍자음</text>
+<text x="379" y="239" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">#</text>
+</svg>

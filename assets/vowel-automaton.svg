@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="428" viewBox="0 0 900 428">
+<rect width="900" height="428" fill="#FBFCFD"/>
+<style>.n{font:600 15px sans-serif}.e{font:10px sans-serif;fill:#6B7684}.h{font:600 11px sans-serif;fill:#8A94A0}</style>
+<text x="196" y="18" class="h" text-anchor="middle">1타</text>
+<text x="346" y="18" class="h" text-anchor="middle">2타</text>
+<text x="496" y="18" class="h" text-anchor="middle">3타</text>
+<text x="646" y="18" class="h" text-anchor="middle">4타</text>
+<text x="796" y="18" class="h" text-anchor="middle">5타</text>
+<path d="M68 214.0 C121.0 214.0, 121.0 214.0, 174 214.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="121.0" y="211.0" class="e" text-anchor="middle">1</text>
+<path d="M68 214.0 C121.0 214.0, 121.0 260.0, 174 260.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="121.0" y="234.0" class="e" text-anchor="middle">2</text>
+<path d="M68 214.0 C121.0 214.0, 121.0 168.0, 174 168.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="121.0" y="188.0" class="e" text-anchor="middle">3</text>
+<path d="M218 214.0 C271.0 214.0, 271.0 99.0, 324 99.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="153.5" class="e" text-anchor="middle">2</text>
+<path d="M218 260.0 C271.0 260.0, 271.0 145.0, 324 145.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="199.5" class="e" text-anchor="middle">1</text>
+<path d="M218 260.0 C271.0 260.0, 271.0 191.0, 324 191.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="222.5" class="e" text-anchor="middle">3</text>
+<path d="M218 260.0 C271.0 260.0, 271.0 329.0, 324 329.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="291.5" class="e" text-anchor="middle">2</text>
+<path d="M218 168.0 C271.0 168.0, 271.0 237.0, 324 237.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="199.5" class="e" text-anchor="middle">2</text>
+<path d="M218 168.0 C271.0 168.0, 271.0 283.0, 324 283.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="271.0" y="222.5" class="e" text-anchor="middle">1</text>
+<path d="M368 99.0 C421.0 99.0, 421.0 99.0, 474 99.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="96.0" class="e" text-anchor="middle">2</text>
+<path d="M368 99.0 C421.0 99.0, 421.0 53.0, 474 53.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="73.0" class="e" text-anchor="middle">1</text>
+<path d="M368 145.0 C421.0 145.0, 421.0 145.0, 474 145.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="142.0" class="e" text-anchor="middle">1</text>
+<path d="M368 191.0 C421.0 191.0, 421.0 237.0, 474 237.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="211.0" class="e" text-anchor="middle">1</text>
+<path d="M368 329.0 C421.0 329.0, 421.0 191.0, 474 191.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="257.0" class="e" text-anchor="middle">1</text>
+<path d="M368 329.0 C421.0 329.0, 421.0 283.0, 474 283.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="303.0" class="e" text-anchor="middle">3</text>
+<path d="M368 237.0 C421.0 237.0, 421.0 329.0, 474 329.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="280.0" class="e" text-anchor="middle">1</text>
+<path d="M368 237.0 C421.0 237.0, 421.0 375.0, 474 375.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="421.0" y="303.0" class="e" text-anchor="middle">2</text>
+<path d="M518 99.0 C571.0 99.0, 571.0 145.0, 624 145.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="571.0" y="119.0" class="e" text-anchor="middle">1</text>
+<path d="M518 237.0 C571.0 237.0, 571.0 237.0, 624 237.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="571.0" y="234.0" class="e" text-anchor="middle">2</text>
+<path d="M518 191.0 C571.0 191.0, 571.0 191.0, 624 191.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="571.0" y="188.0" class="e" text-anchor="middle">1</text>
+<path d="M518 329.0 C571.0 329.0, 571.0 283.0, 624 283.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="571.0" y="303.0" class="e" text-anchor="middle">2</text>
+<path d="M668 237.0 C721.0 237.0, 721.0 191.0, 774 191.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="721.0" y="211.0" class="e" text-anchor="middle">1</text>
+<path d="M668 283.0 C721.0 283.0, 721.0 237.0, 774 237.0" fill="none" stroke="#C9D0D8" stroke-width="1.2"/>
+<text x="721.0" y="257.0" class="e" text-anchor="middle">1</text>
+<circle cx="46" cy="214.0" r="16" fill="#12171D"/>
+<text x="46" y="219.0" class="n" fill="#fff" text-anchor="middle">시작</text>
+<rect x="175" y="153.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="196" y="174.0" class="n" fill="#12171D" text-anchor="middle">ㅡ</text>
+<rect x="175" y="199.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="196" y="220.0" class="n" fill="#12171D" text-anchor="middle">ㅣ</text>
+<rect x="175" y="245.0" width="42" height="30" rx="8" fill="#FFF3D6" stroke="#E0A800" stroke-width="1.4" stroke-dasharray="3 2"/>
+<text x="196" y="266.0" class="n" fill="#12171D" text-anchor="middle">ㆍ</text>
+<rect x="325" y="84.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="346" y="105.0" class="n" fill="#12171D" text-anchor="middle">ㅏ</text>
+<rect x="325" y="130.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="346" y="151.0" class="n" fill="#12171D" text-anchor="middle">ㅓ</text>
+<rect x="325" y="176.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="346" y="197.0" class="n" fill="#12171D" text-anchor="middle">ㅗ</text>
+<rect x="325" y="222.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="346" y="243.0" class="n" fill="#12171D" text-anchor="middle">ㅜ</text>
+<rect x="325" y="268.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="346" y="289.0" class="n" fill="#12171D" text-anchor="middle">ㅢ</text>
+<rect x="325" y="314.0" width="42" height="30" rx="8" fill="#FFF3D6" stroke="#E0A800" stroke-width="1.4" stroke-dasharray="3 2"/>
+<text x="346" y="335.0" class="n" fill="#12171D" text-anchor="middle">ㆍㆍ</text>
+<rect x="475" y="38.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="59.0" class="n" fill="#12171D" text-anchor="middle">ㅐ</text>
+<rect x="475" y="84.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="105.0" class="n" fill="#12171D" text-anchor="middle">ㅑ</text>
+<rect x="475" y="130.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="151.0" class="n" fill="#12171D" text-anchor="middle">ㅔ</text>
+<rect x="475" y="176.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="197.0" class="n" fill="#12171D" text-anchor="middle">ㅕ</text>
+<rect x="475" y="222.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="243.0" class="n" fill="#12171D" text-anchor="middle">ㅚ</text>
+<rect x="475" y="268.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="289.0" class="n" fill="#12171D" text-anchor="middle">ㅛ</text>
+<rect x="475" y="314.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="335.0" class="n" fill="#12171D" text-anchor="middle">ㅟ</text>
+<rect x="475" y="360.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="496" y="381.0" class="n" fill="#12171D" text-anchor="middle">ㅠ</text>
+<rect x="625" y="130.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="646" y="151.0" class="n" fill="#12171D" text-anchor="middle">ㅒ</text>
+<rect x="625" y="176.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="646" y="197.0" class="n" fill="#12171D" text-anchor="middle">ㅖ</text>
+<rect x="625" y="222.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="646" y="243.0" class="n" fill="#12171D" text-anchor="middle">ㅘ</text>
+<rect x="625" y="268.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="646" y="289.0" class="n" fill="#12171D" text-anchor="middle">ㅝ</text>
+<rect x="775" y="176.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="796" y="197.0" class="n" fill="#12171D" text-anchor="middle">ㅙ</text>
+<rect x="775" y="222.0" width="42" height="30" rx="8" fill="#E8F0FE" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="796" y="243.0" class="n" fill="#12171D" text-anchor="middle">ㅞ</text>
+<text x="14" y="416" class="e">실선=확정 모음 · 점선(노랑)=미완성 중간상태(화면 미출력) · 간선 숫자=키</text>
+</svg>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233B82F6'/%3E%3Ctext x='16' y='23' font-size='19' font-weight='700' fill='white' text-anchor='middle' font-family='sans-serif'%3Eㄴ%3C/text%3E%3C/svg%3E">
+<title>천지인 IME — 4×4</title>
+<style>
+  :root{
+    --bg:#F2F4F7; --panel:#fff; --key:#fff; --fn:#E4E8EE; --nav:#DCE6F5; --hj:#FDF0D5;
+    --bd:#D5DAE1; --txt:#12171D; --sub:#8A94A0; --acc:#3B82F6; --hja:#B4791F;
+    --ok:#0E9F6E; --warn:#D97706;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#101418; --panel:#161C22; --key:#1E252D; --fn:#2A333D; --nav:#243040;
+           --hj:#3A2E1A; --bd:#2E3742; --txt:#F5F7FA; --sub:#8A94A0; --hja:#E0A800; }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo",
+      "Malgun Gothic",Roboto,sans-serif;
+    display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:12px;gap:10px}
+  .wrap{width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px}
+  h1{font-size:15px;margin:0;font-weight:700;display:flex;align-items:center;gap:8px}
+  h1 span{font-size:11px;font-weight:500;color:var(--sub)}
+
+  /* 입력 화면 */
+  .screen{background:var(--panel);border:1px solid var(--bd);border-radius:12px;
+    padding:12px;min-height:104px;font-size:20px;line-height:1.5;word-break:break-all;
+    white-space:pre-wrap;position:relative}
+  .pre{background:rgba(59,130,246,.14);border-bottom:2px solid var(--acc);border-radius:2px}
+  .caret{display:inline-block;width:2px;height:1.1em;background:var(--acc);
+    vertical-align:-.18em;animation:bl 1s steps(1) infinite}
+  @keyframes bl{50%{opacity:0}}
+  .sel{background:rgba(59,130,246,.28);border-radius:3px}
+
+  /* 상태 바 */
+  .bar{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--sub);flex-wrap:wrap}
+  .chip{background:var(--panel);border:1px solid var(--bd);border-radius:999px;
+    padding:3px 9px;font-weight:600}
+  .chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .msg{color:var(--warn);font-weight:700}
+  .msg.ok{color:var(--ok)}
+
+  /* 후보 / 팔레트 */
+  .cands{display:flex;gap:6px;overflow-x:auto;padding:6px;background:var(--panel);
+    border:1px solid var(--bd);border-radius:10px;min-height:44px;align-items:center}
+  .cand{flex:0 0 auto;padding:5px 12px;border-radius:8px;font-size:19px;cursor:pointer;
+    border:1px solid var(--bd);background:var(--key)}
+  .cand.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .pal{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:var(--panel);
+    border:1px solid var(--bd);border-radius:10px;padding:6px}
+  .pal button{padding:11px 0;font-size:17px;border:1px solid var(--bd);border-radius:8px;
+    background:var(--key);color:var(--txt);cursor:pointer}
+
+  /* 키패드 */
+  .pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+    background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:10px}
+  .k{position:relative;height:58px;border-radius:10px;border:1px solid var(--bd);
+    background:var(--key);color:var(--txt);font-size:20px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;user-select:none;
+    transition:background .07s,transform .07s}
+  .k:active,.k.act{background:rgba(59,130,246,.16);transform:scale(.97)}
+  .k .num{position:absolute;top:5px;right:7px;font-size:10px;font-weight:500;color:var(--sub)}
+  .k .lp{position:absolute;bottom:4px;right:7px;font-size:9px;color:var(--sub);opacity:.75}
+  .k.fn{background:var(--fn);color:var(--acc);font-size:18px}
+  .k.nav{background:var(--nav);color:var(--acc);font-size:18px}
+  .k.hj{background:var(--hj);color:var(--hja);font-size:17px}
+  .k.danger{color:#DC2626}
+  /* 멀티탭 순환 인디케이터 (docs/03 §4.1) */
+  .dots{position:absolute;top:6px;left:0;right:0;display:flex;gap:3px;justify-content:center}
+  .dots i{width:4px;height:4px;border-radius:50%;background:var(--bd)}
+  .dots i.on{background:var(--acc)}
+
+  .row{display:flex;gap:6px;flex-wrap:wrap}
+  .row button{font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);
+    background:var(--panel);color:var(--txt);cursor:pointer}
+  .hint{font-size:11px;color:var(--sub);line-height:1.6}
+  kbd{background:var(--fn);border:1px solid var(--bd);border-radius:4px;padding:1px 5px;font-size:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>천지인 IME <span>4×4 · 16키</span></h1>
+
+  <div class="screen" id="screen"></div>
+
+  <div class="bar">
+    <span class="chip on" id="cLayout">한글</span>
+    <span class="chip" id="cShift" style="display:none">SHIFT</span>
+    <span id="cInfo"></span>
+    <span class="msg" id="cMsg"></span>
+  </div>
+
+  <div class="cands" id="cands" style="display:none"></div>
+  <div class="pal" id="pal" style="display:none"></div>
+
+  <div class="pad" id="pad"></div>
+
+  <div class="row">
+    <button id="btnSel">선택 블록 지정 (한자 변환용)</button>
+    <button id="btnSend">전송 모드: 꺼짐</button>
+    <button id="btnClear">전체 지우기</button>
+  </div>
+
+  <div class="hint">
+    <b>조작</b> · 자음키 길게 = 순환 마지막 글자(ㄲㄸㅃㅆㅉㄹㅁ) &nbsp;·&nbsp;
+    <kbd>▶</kbd> 조합 확정 &nbsp;·&nbsp; <kbd>漢</kbd>+<kbd>◀▶</kbd> 레이아웃 전환<br>
+    <b>한자</b> · 텍스트 선택 후 <kbd>漢</kbd> (예: 대한민국, 한국, 회의, 국, 시간) — 선택 없으면 기호 팔레트<br>
+    <b>M1 가드</b> · 전송 모드에서 <kbd>⌫</kbd> 직후 300ms 내 <kbd>↵</kbd>는 차단됨
+  </div>
+</div>
+
+<script src="core/cheonjiin.js"></script>
+<script src="core/hanja.js"></script>
+<script src="core/shell.js"></script>
+<script>
+(function(){
+  'use strict';
+  var ime = CheonjiinShell.create({ enterIsSend:false });
+  window.__imeRef = ime;   // 테스트 훅
+
+  // 확정 배치 (docs/07 §1.2)
+  var LAYOUT = {
+    '한글': [
+      ['K1','ㅣ','1','',''], ['K2','ㆍ','2','',''], ['K3','ㅡ','3','',''], ['BACK','⌫','','fn danger',''],
+      ['K4','ㄱㅋ','4','','ㄲ'], ['K5','ㄴㄹ','5','','ㄹ'], ['K6','ㄷㅌ','6','','ㄸ'], ['ENTER','↵','','fn',''],
+      ['K7','ㅂㅍ','7','','ㅃ'], ['K8','ㅅㅎ','8','','ㅆ'], ['K9','ㅈㅊ','9','','ㅉ'], ['HANJA','漢','','hj',''],
+      ['LEFT','◀','','nav',''], ['K0','ㅇㅁ','0','','ㅁ'], ['RIGHT','▶','','nav',''], ['SPACE','␣','','fn','']
+    ],
+    '영어': [
+      ['K1','.,?','1','',''], ['K2','ABC','2','','C'], ['K3','DEF','3','','F'], ['BACK','⌫','','fn danger',''],
+      ['K4','GHI','4','','I'], ['K5','JKL','5','','L'], ['K6','MNO','6','','O'], ['ENTER','↵','','fn',''],
+      ['K7','PQRS','7','','S'], ['K8','TUV','8','','V'], ['K9','WXYZ','9','','Z'], ['HANJA','漢','','hj',''],
+      ['LEFT','◀','','nav',''], ['K0','⇧','0','',''], ['RIGHT','▶','','nav',''], ['SPACE','␣','','fn','']
+    ],
+    '숫자': [
+      ['K1','1','','',''], ['K2','2','','',''], ['K3','3','','',''], ['BACK','⌫','','fn danger',''],
+      ['K4','4','','',''], ['K5','5','','',''], ['K6','6','','',''], ['ENTER','↵','','fn',''],
+      ['K7','7','','',''], ['K8','8','','',''], ['K9','9','','',''], ['HANJA','漢','','hj',''],
+      ['LEFT','◀','','nav',''], ['K0','0','','',''], ['RIGHT','▶','','nav',''], ['SPACE','␣','','fn','']
+    ]
+  };
+
+  var pad=document.getElementById('pad'), screen=document.getElementById('screen'),
+      cands=document.getElementById('cands'), pal=document.getElementById('pal'),
+      cLayout=document.getElementById('cLayout'), cInfo=document.getElementById('cInfo'),
+      cMsg=document.getElementById('cMsg'), cShift=document.getElementById('cShift');
+  var selRange=null, curLayout=null;
+
+  function buildPad(name){
+    if(curLayout===name) return;
+    curLayout=name; pad.innerHTML='';
+    LAYOUT[name].forEach(function(d){
+      var id=d[0], label=d[1], num=d[2], cls=d[3]||'';
+      var isChar = cls==='' ;
+      var b=document.createElement('div');
+      b.className='k '+cls; b.dataset.id=id;
+      var html='<span class="lbl">'+label+'</span><span class="dots"></span>';
+      if(num) html+='<span class="num">'+num+'</span>';
+      if(d[4]) html+='<span class="lp">'+d[4]+'</span>';
+      b.innerHTML=html;
+      pad.appendChild(b);
+    });
+    bind();
+  }
+
+  // 타이머를 DOM 밖(모듈 스코프)에 둔다 — 레이아웃 전환으로 DOM이 재생성돼도 유실되지 않음
+  var hjTimer=null, hjLong=false;
+  function clearHj(){ if(hjTimer){ clearTimeout(hjTimer); hjTimer=null; } }
+
+  function bind(){ /* 이벤트 위임을 쓰므로 개별 바인딩 불필요 */ }
+
+  // pad 컨테이너에 한 번만 위임 바인딩
+  pad.addEventListener('pointerdown', function(ev){
+    var b=ev.target.closest('.k'); if(!b) return;
+    ev.preventDefault(); b.classList.add('act');
+    var id=b.dataset.id;
+    if(id==='HANJA'){
+      hjLong=false; ime.hanjaDown();
+      clearHj();
+      hjTimer=setTimeout(function(){ hjTimer=null; hjLong=true; ime.hanjaLongPress(); },
+                         ime.config.longpressMs);
+    } else if(id.charAt(0)==='K'){ ime.keyDown(id); }
+  });
+
+  pad.addEventListener('pointerup', function(ev){
+    var b=ev.target.closest('.k'); if(!b) return;
+    ev.preventDefault(); b.classList.remove('act');
+    var id=b.dataset.id;
+    if(id==='HANJA'){
+      clearHj();
+      if(hjLong){ hjLong=false; } else { ime.hanjaUp(); }
+    }
+    else if(id.charAt(0)==='K'){ ime.keyUp(id); }
+    else if(id==='BACK') ime.backspace();
+    else if(id==='ENTER') ime.enter();
+    else if(id==='SPACE') ime.space();
+    else if(id==='LEFT') ime.arrow(-1);
+    else if(id==='RIGHT') ime.arrow(1);
+  });
+
+  pad.addEventListener('pointerleave', function(ev){
+    var b=ev.target.closest && ev.target.closest('.k'); if(b) b.classList.remove('act');
+  }, true);
+  pad.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function render(v){
+    buildPad(v.layout);
+
+    // 화면
+    var cm = esc(v.committed).replace(/\n/g,'<br>');
+    if(selRange && v.committed.indexOf(selRange)>=0){
+      var i=v.committed.lastIndexOf(selRange);
+      cm = esc(v.committed.slice(0,i)) + '<span class="sel">'+esc(selRange)+'</span>'
+         + esc(v.committed.slice(i+selRange.length));
+      cm = cm.replace(/\n/g,'<br>');
+    }
+    screen.innerHTML = cm
+      + (v.preedit?'<span class="pre">'+esc(v.preedit)+'</span>':'')
+      + '<span class="caret"></span>';
+
+    cLayout.textContent=v.layout;
+    cShift.style.display = v.shift?'':'none';
+    cMsg.textContent = v.message||'';
+    cMsg.className = 'msg' + (v.message && v.message.indexOf('레이아웃')>=0 ? ' ok':'');
+
+    var info=[];
+    if(v.preedit) info.push('조합: '+v.preedit);
+    if(v.cycleLen>1) info.push('탭 '+(v.tap+1)+'/'+v.cycleLen);
+    cInfo.textContent = info.join(' · ');
+
+    // 멀티탭 인디케이터
+    Array.prototype.forEach.call(pad.querySelectorAll('.k'), function(b){
+      var d=b.querySelector('.dots'); if(!d) return;
+      d.innerHTML='';
+      if(b.dataset.id===v.activeKey && v.cycleLen>1){
+        for(var i=0;i<v.cycleLen;i++){
+          var s=document.createElement('i'); if(i===v.tap) s.className='on'; d.appendChild(s);
+        }
+      }
+    });
+
+    // 후보
+    if(v.candidates){
+      cands.style.display=''; cands.innerHTML='';
+      v.candidates.forEach(function(c,i){
+        var el=document.createElement('div');
+        el.className='cand'+(i===v.candIndex?' sel':''); el.textContent=c;
+        el.onclick=function(){ ime.pickCandidate(i); selRange=null; };
+        cands.appendChild(el);
+      });
+    } else cands.style.display='none';
+
+    // 팔레트
+    if(v.paletteOpen){
+      pal.style.display=''; pal.innerHTML='';
+      v.symbols.forEach(function(s){
+        var el=document.createElement('button'); el.textContent=s;
+        el.onclick=function(){ ime.pickSymbol(s,true); };
+        pal.appendChild(el);
+      });
+    } else pal.style.display='none';
+  }
+
+  ime.on(render);
+
+  // 선택 블록 지정
+  document.getElementById('btnSel').onclick=function(){
+    var t=prompt('한자 변환할 텍스트를 입력하세요 (예: 대한민국, 회의, 국)','대한민국');
+    if(!t) return;
+    ime.reset();
+    for(var i=0;i<t.length;i++){} // 텍스트를 직접 커밋
+    var st=ime._state; st.core=Cheonjiin.newState(); st.core.committed=t;
+    selRange=t; ime.setSelection(t,true);
+  };
+  var sendMode=false;
+  document.getElementById('btnSend').onclick=function(){
+    sendMode=!sendMode; ime.config.enterIsSend=sendMode;
+    this.textContent='전송 모드: '+(sendMode?'켜짐 (M1 가드 활성)':'꺼짐');
+  };
+  document.getElementById('btnClear').onclick=function(){ selRange=null; ime.setSelection(null); ime.reset(); };
+
+  // 물리 키보드 매핑
+  document.addEventListener('keydown', function(e){
+    var m={'1':'K1','2':'K2','3':'K3','4':'K4','5':'K5','6':'K6','7':'K7','8':'K8','9':'K9','0':'K0'};
+    if(e.key in m){ e.preventDefault(); ime.tap(m[e.key]); }
+    else if(e.key==='Backspace'){ e.preventDefault(); ime.backspace(); }
+    else if(e.key==='Enter'){ e.preventDefault(); ime.enter(); }
+    else if(e.key===' '){ e.preventDefault(); ime.space(); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); ime.arrow(-1); }
+    else if(e.key==='ArrowRight'){ e.preventDefault(); ime.arrow(1); }
+  });
+
+  render(ime.view());
+})();
+</script>
+</body>
+</html>

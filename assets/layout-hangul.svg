@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="464" height="316" viewBox="0 0 464 316">
+<rect width="464" height="316" rx="14" fill="#F2F4F7"/>
+<text x="12" y="26" font-family="sans-serif" font-size="14" font-weight="700" fill="#12171D">한글</text>
+<text x="452" y="26" font-family="sans-serif" font-size="11" fill="#8A94A0" text-anchor="end">漢 + ◀▶ 로 전환</text>
+<rect x="12" y="40" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="64.0" y="78.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅣ</text>
+<text x="108" y="55" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">1</text>
+<rect x="124" y="40" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="176.0" y="78.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㆍ</text>
+<text x="220" y="55" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">2</text>
+<rect x="236" y="40" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="288.0" y="78.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅡ</text>
+<text x="332" y="55" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">3</text>
+<rect x="348" y="40" width="104" height="60" rx="9" fill="#E4E8EE" stroke="#D5DAE1" stroke-width="1"/>
+<text x="400.0" y="78.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#3B82F6" text-anchor="middle">⌫</text>
+<rect x="12" y="108" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="64.0" y="146.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㄱㅋ</text>
+<text x="108" y="123" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">4</text>
+<rect x="124" y="108" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="176.0" y="146.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㄴㄹ</text>
+<text x="220" y="123" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">5</text>
+<rect x="236" y="108" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="288.0" y="146.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㄷㅌ</text>
+<text x="332" y="123" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">6</text>
+<rect x="348" y="108" width="104" height="60" rx="9" fill="#E4E8EE" stroke="#D5DAE1" stroke-width="1"/>
+<text x="400.0" y="146.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#3B82F6" text-anchor="middle">↵</text>
+<rect x="12" y="176" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="64.0" y="214.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅂㅍ</text>
+<text x="108" y="191" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">7</text>
+<rect x="124" y="176" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="176.0" y="214.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅅㅎ</text>
+<text x="220" y="191" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">8</text>
+<rect x="236" y="176" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="288.0" y="214.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅈㅊ</text>
+<text x="332" y="191" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">9</text>
+<rect x="348" y="176" width="104" height="60" rx="9" fill="#FDF0D5" stroke="#D5DAE1" stroke-width="1"/>
+<text x="400.0" y="214.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#B4791F" text-anchor="middle">漢</text>
+<rect x="12" y="244" width="104" height="60" rx="9" fill="#DCE6F5" stroke="#D5DAE1" stroke-width="1"/>
+<text x="64.0" y="282.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#3B82F6" text-anchor="middle">◀</text>
+<rect x="124" y="244" width="104" height="60" rx="9" fill="#FFFFFF" stroke="#D5DAE1" stroke-width="1"/>
+<text x="176.0" y="282.0" font-family="sans-serif" font-size="22" font-weight="600" fill="#12171D" text-anchor="middle">ㅇㅁ</text>
+<text x="220" y="259" font-family="sans-serif" font-size="10" fill="#8A94A0" text-anchor="end">0</text>
+<rect x="236" y="244" width="104" height="60" rx="9" fill="#DCE6F5" stroke="#D5DAE1" stroke-width="1"/>
+<text x="288.0" y="282.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#3B82F6" text-anchor="middle">▶</text>
+<rect x="348" y="244" width="104" height="60" rx="9" fill="#E4E8EE" stroke="#D5DAE1" stroke-width="1"/>
+<text x="400.0" y="282.0" font-family="sans-serif" font-size="19" font-weight="600" fill="#3B82F6" text-anchor="middle">␣</text>
+</svg>

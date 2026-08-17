@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">천지인 키보드</string>
+    <string name="ime_name">천지인 (4×4)</string>
+    <string name="subtype_ko">천지인 한글</string>
+    <string name="subtype_en">천지인 영문</string>
+</resources>

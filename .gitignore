@@ -1,0 +1,27 @@
+# 빌드 산출물
+build/
+build-stub/
+build-apk/
+*.class
+*.o
+*.dll
+*.apk
+.gradle/
+gradlew
+gradlew.bat
+gradle/
+node_modules/
+__pycache__/
+
+# 테스트 바이너리 (확장자 없는 실행파일만! *.cpp 소스와 이름이 겹친다)
+# ⚠️ `rm ime/native/test_*` 같은 넓은 글롭 금지 — test_shell.cpp 를 두 번 날렸다.
+/ime/native/test_cpp
+/ime/native/test_shell
+/ime/native/test_tsf
+/ime/native/dump
+/ime/native/hanja_dump
+/ime/macos/test_imk
+ime/ios/.build/
+
+# 대용량 중간 산출물 (spec/hanja-dict.json 에서 재생성)
+spec/words-raw.json

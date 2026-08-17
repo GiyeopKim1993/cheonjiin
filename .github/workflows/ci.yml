@@ -1,0 +1,242 @@
+name: CI
+
+# 천지인 IME 검증 게이트 (docs/04-기능명세.md F9)
+#   - 4개 언어 코어가 11,172자 키 시퀀스까지 바이트 단위로 동일해야 통과
+#   - 공용 테스트 벡터 71건은 모든 구현이 통과해야 함
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ───────── 1. 코어: 4개 언어 + 교차 동일성 ─────────
+  core:
+    name: 코어 (Python·JS·Java·C++)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: 전체 검증 (코어 4종 + 셸 4종 + 사전 + 해시 대조)
+        run: ./run-all-tests.sh
+
+      - name: 교차 언어 해시 아티팩트
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-language-dumps
+          path: /tmp/xl/*.txt
+          if-no-files-found: ignore
+
+  # ───────── 2. 웹 E2E (실제 브라우저) ─────────
+  e2e:
+    name: E2E (Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: puppeteer 설치
+        working-directory: ime/e2e
+        run: npm i -D puppeteer@23
+      - name: 웹 IME 서버 기동
+        run: |
+          python3 -m http.server 7000 --directory ime &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:7000/ >/dev/null && break || sleep 1
+          done
+      - name: E2E 실행 (28건)
+        working-directory: ime/e2e
+        run: node e2e.js
+      - name: 스크린샷
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ime-screenshot
+          path: assets/ime-screenshot.png
+          if-no-files-found: ignore
+
+  # ───────── 3. Android APK ─────────
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+
+      - name: Gradle 래퍼 준비
+        working-directory: ime/android
+        run: |
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+            repositories { google(); mavenCentral(); gradlePluginPortal() }
+          }
+          dependencyResolutionManagement {
+            repositories { google(); mavenCentral() }
+          }
+          rootProject.name = 'cuime'
+          EOF
+          gradle wrapper --gradle-version 8.7
+
+      - name: assembleDebug
+        working-directory: ime/android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: APK 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-debug-apk
+          path: ime/android/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  # ───────── 4. Windows TSF DLL ─────────
+  windows-tsf:
+    name: Windows TSF (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: 코어·셸 검증 (MSVC)
+        working-directory: ime/native
+        shell: cmd
+        run: |
+          cl /std:c++17 /EHsc /utf-8 /Fe:test_core.exe test.cpp || exit /b 1
+          test_core.exe || exit /b 1
+          cl /std:c++17 /EHsc /utf-8 /Fe:test_shell.exe test_shell.cpp || exit /b 1
+          test_shell.exe || exit /b 1
+          cl /std:c++17 /EHsc /utf-8 /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
+          test_tsf.exe || exit /b 1
+
+      - name: TSF DLL 빌드
+        working-directory: ime/native
+        shell: cmd
+        run: |
+          cl /std:c++17 /EHsc /utf-8 /LD /Fe:cuime.dll tsf_textservice.cpp ^
+             /link ole32.lib oleaut32.lib advapi32.lib user32.lib || exit /b 1
+
+      - name: DLL 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-tsf-dll
+          path: ime/native/cuime.dll
+          if-no-files-found: error
+
+  # ───────── 5. Linux IBus 엔진 ─────────
+  linux-ibus:
+    name: Linux IBus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ibus 개발 패키지
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libibus-1.0-dev pkg-config
+      - name: IBus 엔진 빌드
+        working-directory: ime/native
+        run: |
+          g++ -std=c++17 -O2 -I. -DCUIME_IBUS_MAIN ibus_engine.cpp \
+              $(pkg-config --cflags --libs ibus-1.0) -o cuime-ibus
+          ls -la cuime-ibus
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cuime-ibus
+          path: ime/native/cuime-ibus
+          if-no-files-found: error
+
+  # ───────── 6. macOS IMK ─────────
+  macos-imk:
+    name: macOS IMK
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 코어·셸 검증 (clang)
+        working-directory: ime/native
+        run: |
+          clang++ -std=c++17 -O2 -I. -o test_core test.cpp && ./test_core
+          clang++ -std=c++17 -O2 -I. -o test_shell test_shell.cpp && ./test_shell
+      - name: IMK 브리지 검증
+        working-directory: ime/macos
+        run: |
+          clang++ -std=c++17 -O2 -I../native -DCUIME_IMK_TEST -DCUIME_IMK_NO_OBJC \
+                  -x c++ -o test_imk CheonjiinBridge.mm
+          ./test_imk
+      - name: IMK Objective-C++ 컴파일 (실제 프레임워크)
+        working-directory: ime/macos
+        run: |
+          clang++ -std=c++17 -fobjc-arc -I../native -c CheonjiinBridge.mm -o /tmp/bridge.o
+          echo "✅ Objective-C++ 컴파일 통과"
+
+  # ───────── 7. 사전 재생성 검증 ─────────
+  dict:
+    name: 한자 사전 재현성
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: 생성물이 커밋본과 일치하는가
+        run: |
+          python3 tools/gen_hanja.py
+          git diff --exit-code -- \
+            ime/core/hanja.js \
+            ime/android/src/main/java/com/cuime/HanjaDict.java \
+            ime/native/hanja.hpp \
+            || { echo "❌ 사전 생성물이 spec/hanja-dict.json 과 어긋납니다. tools/gen_hanja.py 실행 후 커밋하세요."; exit 1; }
+          echo "✅ 사전 생성물 최신"
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: 대용량 사전 컴파일 (상수 풀 한계 회귀 방지)
+        run: |
+          mkdir -p /tmp/dictbuild
+          javac -encoding UTF-8 -d /tmp/dictbuild \
+            ime/android/src/main/java/com/cuime/HanjaDict.java
+          echo "✅ HanjaDict 컴파일 통과 (단어 3만 규모)"
+
+  firmware:
+    name: 펌웨어 (core + app + HAL + 보드 포트)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: 테이블이 참조 구현과 일치하는가
+        run: |
+          python3 tools/gen_firmware_tables.py
+          git diff --exit-code -- firmware/core/cuime_tables.h \
+            || { echo "❌ cuime_tables.h 가 참조 구현과 어긋납니다. tools/gen_firmware_tables.py 실행 후 커밋하세요."; exit 1; }
+          echo "✅ 펌웨어 테이블 최신"
+
+      - name: 전체 검증 (시뮬레이터 + 포트 정합성 + 전수 대조)
+        run: cd firmware && ./build.sh
+
+      - name: ARM 크로스 컴파일 (실 툴체인)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-arm-none-eabi
+          # -c 다중 입력에는 -o 를 쓸 수 없다. 파일별로 컴파일한다.
+          mkdir -p /tmp/armobj
+          for CPU in cortex-m4 cortex-m0plus; do
+            for SRC in firmware/core/cuime.c firmware/app/cuime_app.c \
+                       firmware/port/stm32/hal_stm32.c firmware/port/rp2040/hal_rp2040.c; do
+              arm-none-eabi-gcc -c -std=c99 -Os -Wall -Wextra -Werror \
+                -mcpu=$CPU -mthumb -DCUIME_PORT_STUB \
+                -Ifirmware/core -Ifirmware/hal -Ifirmware/app \
+                "$SRC" -o "/tmp/armobj/$(basename $SRC .c).$CPU.o"
+            done
+            echo "✅ $CPU 크로스 컴파일 통과 (-Werror)"
+          done
+
+      - name: 코드 크기 (플래시 예산)
+        run: |
+          arm-none-eabi-size -t /tmp/armobj/*.cortex-m0plus.o
