@@ -110,12 +110,15 @@ jobs:
         working-directory: ime/native
         shell: cmd
         run: |
-          cl /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_core.exe test.cpp || exit /b 1
-          test_core.exe || exit /b 1
-          cl /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_shell.exe test_shell.cpp || exit /b 1
-          test_shell.exe || exit /b 1
-          cl /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
-          test_tsf.exe || exit /b 1
+          echo === core ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_core.exe test.cpp || exit /b 1
+          test_core.exe || (echo [FAIL] test_core & exit /b 1)
+          echo === shell ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_shell.exe test_shell.cpp || exit /b 1
+          test_shell.exe || (echo [FAIL] test_shell & exit /b 1)
+          echo === tsf stub ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
+          test_tsf.exe || (echo [FAIL] test_tsf & exit /b 1)
 
       - name: TSF DLL 빌드
         working-directory: ime/native
@@ -283,12 +286,16 @@ jobs:
       - name: iOS 실제 빌드 (UIKit, arm64)
         working-directory: ime/ios
         run: |
+          # -emit-object 는 파일마다 .o 를 만들므로 -o 를 함께 쓸 수 없다
+          # (error: cannot specify -o when generating multiple output files).
+          # 출력 디렉터리를 지정하고 -c 로 컴파일한다.
+          mkdir -p /tmp/iosobj
           xcrun --sdk iphoneos swiftc -target arm64-apple-ios13.0 \
             -sdk "$(xcrun --sdk iphoneos --show-sdk-path)" \
-            -emit-module -emit-object -O \
+            -c -O -module-name CuimeKeyboard \
             CheonjiinCore.swift CompositionBridge.swift \
-            KeypadView.swift KeyboardViewController.swift \
-            -module-name CuimeKeyboard -o /tmp/cuime_ios.o
+            KeypadView.swift KeyboardViewController.swift
+          ls -la *.o
           echo "✅ 실제 UIKit 기반 iOS arm64 컴파일 통과"
 
       - name: Info.plist 검증

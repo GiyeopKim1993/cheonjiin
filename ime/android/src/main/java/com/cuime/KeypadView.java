@@ -143,7 +143,7 @@ public class KeypadView extends View {
     public void setLayout(CheonjiinIME.Layout l) {
         layout = l;
         candidates = null; paletteOpen = false;
-        cancelLongPress();                      // 레이아웃 전환 시 타이머 확실히 취소
+        cancelLongPressTimer();                      // 레이아웃 전환 시 타이머 확실히 취소
         invalidate();
     }
 
@@ -341,7 +341,7 @@ public class KeypadView extends View {
                 if (idx < 0) return true;
                 final String id = IDS[idx];
                 longPressFired = false;
-                cancelLongPress();
+                cancelLongPressTimer();
                 if (id.equals("HANJA")) {
                     if (listener != null) listener.onHanjaDown();
                     longPressTask = new Runnable() {
@@ -366,7 +366,7 @@ public class KeypadView extends View {
                 int idx = pressedIdx;
                 pressedIdx = -1;
                 invalidate();
-                cancelLongPress();
+                cancelLongPressTimer();
                 if (idx < 0) return true;
                 String id = IDS[idx];
                 if (longPressFired) {                 // 롱프레스가 이미 처리
@@ -385,7 +385,7 @@ public class KeypadView extends View {
                 return true;
             }
             case MotionEvent.ACTION_CANCEL:
-                pressedIdx = -1; cancelLongPress(); invalidate();
+                pressedIdx = -1; cancelLongPressTimer(); invalidate();
                 return true;
         }
         return true;
@@ -425,7 +425,7 @@ public class KeypadView extends View {
         return -1;
     }
 
-    private void cancelLongPress() {
+    private void cancelLongPressTimer() {
         if (longPressTask != null) { handler.removeCallbacks(longPressTask); longPressTask = null; }
     }
 

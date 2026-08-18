@@ -40,7 +40,9 @@ static const uint32_t SYMBOLS[3][16] = {
 static char key_digit(cuime_key_t k)
 {
     if (k == CUIME_KEY_0) return '0';
-    if (k >= CUIME_KEY_1 && k <= CUIME_KEY_9)
+    /* CUIME_KEY_1 이 열거형 하한이라 `k >= CUIME_KEY_1` 은 항상 참이다.
+     * -Werror=type-limits 에 걸리므로 상한만 검사한다. */
+    if (k <= CUIME_KEY_9)
         return (char)('1' + (k - CUIME_KEY_1));
     return 0;
 }
