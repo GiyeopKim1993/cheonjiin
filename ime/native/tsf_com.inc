@@ -343,9 +343,22 @@ private:
 
 using namespace cuime::tsf;
 
-/* STDAPI 만으로는 내보내지지 않는다(실제로 겪음: 내보내기 테이블에 4종 누락).
- * regsvr32 / CoCreateInstance 가 찾으려면 명시적 dllexport 가 필요하다. */
-#define CUIME_DLLAPI EXTERN_C __declspec(dllexport) HRESULT STDAPICALLTYPE
+/* 내보내기 처리 — 컴파일러별로 다르다.
+ *
+ * MinGW/clang: STDAPI 만으로는 내보내기 테이블에 안 실린다(실제로 겪음:
+ *   4종 전부 누락된 DLL 이 나왔다). __declspec(dllexport) 가 필요하다.
+ *
+ * MSVC: objbase.h 가 이 함수들을 이미 선언해 두었다. 여기서 dllexport 를
+ *   덧붙이면 linkage 불일치로 C2375 가 난다. 대신 링커 지시어로 내보낸다. */
+#ifdef _MSC_VER
+  #define CUIME_DLLAPI STDAPI
+  #pragma comment(linker, "/EXPORT:DllGetClassObject,PRIVATE")
+  #pragma comment(linker, "/EXPORT:DllCanUnloadNow,PRIVATE")
+  #pragma comment(linker, "/EXPORT:DllRegisterServer,PRIVATE")
+  #pragma comment(linker, "/EXPORT:DllUnregisterServer,PRIVATE")
+#else
+  #define CUIME_DLLAPI EXTERN_C __declspec(dllexport) HRESULT STDAPICALLTYPE
+#endif
 
 BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID) {
     if (reason == DLL_PROCESS_ATTACH) {
