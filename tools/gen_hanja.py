@@ -34,7 +34,7 @@ js=f'''/*!
   const CHARS = {json.dumps(chars, ensure_ascii=False, separators=(',',':'))};
   /** 단어 우선 -> 단일 글자 (docs/00 §5) */
   function lookup(target) {{
-    if (WORDS[target]) return [WORDS[target]];
+    if (WORDS[target]) return WORDS[target].slice();
     if (Array.from(target).length === 1 && CHARS[target]) return CHARS[target].slice();
     return [];
   }}
@@ -47,9 +47,17 @@ open(f'{ROOT}/ime/core/hanja.js','w').write(js)
 # ---------- Java ----------
 # 상수 풀 한계(65,535)를 피하려고 개별 리터럴 대신 큰 문자열 블롭을 파싱한다.
 # 블롭 포맷:  key\x1fvalue\x1e key\x1fvalue\x1e ...
-def blob(d):
-    return "\x1e".join(k + "\x1f" + ("".join(v) if isinstance(v, list) else v)
-                        for k, v in d.items())
+# 레코드 구분 \x1e / 키-값 구분 \x1f / **후보 구분 \x1d**
+# chars 는 값이 1글자 한자의 나열이라 이어붙여도 되지만(글자 단위로 쪼갬),
+# words 는 후보가 여러 글자('家庭','假定')라 구분자가 없으면 복원할 수 없다.
+CAND_SEP = "\x1d"
+
+def blob(d, multi=False):
+    def val(v):
+        if not isinstance(v, list):
+            return v
+        return CAND_SEP.join(v) if multi else "".join(v)
+    return "\x1e".join(k + "\x1f" + val(v) for k, v in d.items())
 
 def jchunks(text, size=20000):
     """자바 소스 리터럴 길이 제한(65535 바이트) 회피용 분할"""
@@ -67,7 +75,7 @@ def jesc(s):
         else: out.append(ch)
     return "".join(out)
 
-wblob, cblob = blob(words), blob(chars)
+wblob, cblob = blob(words, multi=True), blob(chars)
 wparts, cparts = jchunks(wblob), jchunks(cblob)
 
 java = f'''/*\n{_note(" * ")}\n */\npackage com.cuime;
@@ -126,7 +134,17 @@ java += '''    }
     /** 단어 우선 -> 단일 글자 (docs/00 §5) */
     public static List<String> lookup(String target) {
         String w = W.get(target);
-        if (w != null) return Collections.singletonList(w);
+        if (w != null) {
+            List<String> out = new ArrayList<>();
+            int st = 0;
+            while (st <= w.length()) {
+                int p = w.indexOf('\u001d', st);
+                if (p < 0) { out.add(w.substring(st)); break; }
+                out.add(w.substring(st, p));
+                st = p + 1;
+            }
+            return out;
+        }
         if (target.codePointCount(0, target.length()) == 1) {
             String s = C.get(target);
             if (s != null) {
@@ -165,7 +183,7 @@ namespace hanja {{
 inline const std::map<std::string,std::string>& words() {{
     static const std::map<std::string,std::string> m = {{
 '''
-for k,v in words.items(): cpp+=f'        {{u8"{k}",u8"{v}"}},\n'
+for k,v in words.items(): cpp+=f'        {{u8"{k}",u8"{chr(0x1d).join(v) if isinstance(v,list) else v}"}},\n'
 cpp+='''    };
     return m;
 }
@@ -193,7 +211,18 @@ inline std::vector<std::string> utf8split(const std::string& s) {
 inline std::vector<std::string> lookup(const std::string& target) {
     auto& W = words();
     auto wi = W.find(target);
-    if (wi != W.end()) return {wi->second};
+    if (wi != W.end()) {
+        std::vector<std::string> out;
+        const std::string& v = wi->second;
+        size_t st = 0;
+        while (true) {
+            size_t p = v.find('\x1d', st);
+            if (p == std::string::npos) { out.push_back(v.substr(st)); break; }
+            out.push_back(v.substr(st, p - st));
+            st = p + 1;
+        }
+        return out;
+    }
     if (utf8split(target).size() == 1) {
         auto& C = chars();
         auto ci = C.find(target);

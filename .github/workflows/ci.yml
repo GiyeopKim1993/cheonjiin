@@ -206,6 +206,69 @@ jobs:
             ime/android/src/main/java/com/cuime/HanjaDict.java
           echo "✅ HanjaDict 컴파일 통과 (단어 3만 규모)"
 
+      - name: 동음이의어 1순위 정확도 (정답 세트 회귀 방지)
+        run: |
+          # 정렬 가중치를 건드렸을 때 '가정 -> 假定' 같은 퇴행을 잡는다.
+          # 덤프 없이 커밋된 사전만으로 정답 세트를 대조한다.
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open('spec/hanja-dict.json', encoding='utf-8'))
+          w = d['words']
+          truth = {}
+          for ln in open('spec/word-rank-truth.tsv', encoding='utf-8'):
+              ln = ln.strip()
+              if not ln or ln.startswith('#'):
+                  continue
+              k, v = ln.split('\t')
+              truth[k] = v
+          miss, n = [], 0
+          for k, want in truth.items():
+              v = w.get(k)
+              if not v:
+                  continue
+              n += 1
+              got = v[0] if isinstance(v, list) else v
+              if got != want:
+                  miss.append(f"{k}: {got} (기대 {want})")
+          acc = (n - len(miss)) / n * 100 if n else 0
+          print(f"1순위 정확도 {n-len(miss)}/{n} ({acc:.1f}%)")
+          for m in miss:
+              print("   ✗", m)
+          # 현재 45/48 = 93.8%. 90% 아래로 떨어지면 정렬이 망가진 것이다.
+          if acc < 90:
+              print(f"❌ 정확도 {acc:.1f}% < 90% — 정렬 가중치 회귀")
+              sys.exit(1)
+          print("✅ 동음이의어 정렬 정상")
+          PYEOF
+
+      - name: 다중 후보 무결성
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open('spec/hanja-dict.json', encoding='utf-8'))
+          w = d['words']
+          bad = []
+          for k, v in w.items():
+              if not isinstance(v, list) or not v:
+                  bad.append((k, 'list 아님/빈 배열'))
+              elif len(v) != len(set(v)):
+                  bad.append((k, '후보 중복'))
+              elif any(len(c) != len(k) for c in v):
+                  bad.append((k, '길이 불일치'))
+          multi = sum(1 for v in w.values() if isinstance(v, list) and len(v) > 1)
+          tot = sum(len(v) for v in w.values() if isinstance(v, list))
+          print(f"표제어 {len(w):,} / 총 후보 {tot:,} / 다중 후보 {multi:,}")
+          if bad:
+              print(f"❌ 이상 {len(bad)}건")
+              for k, why in bad[:10]:
+                  print("   ", k, why)
+              sys.exit(1)
+          if multi < 2000:
+              print(f"❌ 다중 후보 {multi} < 2000 — 후보가 유실됐다")
+              sys.exit(1)
+          print("✅ 다중 후보 무결")
+          PYEOF
+
   firmware:
     name: 펌웨어 (core + app + HAL + 보드 포트)
     runs-on: ubuntu-latest

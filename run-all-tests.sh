@@ -32,7 +32,10 @@ d=json.load(open('spec/hanja-dict.json'))
 qs=list(d['words'].keys())+list(d['chars'].keys())
 open('/tmp/queries.txt','w').write("\n".join(qs))
 def lk(t):
-    if t in d['words']: return [d['words'][t]]
+    # words 값은 후보 배열(다중 후보). 옛 형식(문자열)도 받아들인다.
+    if t in d['words']:
+        v = d['words'][t]
+        return v if isinstance(v, list) else [v]
     if len(t)==1 and t in d['chars']: return d['chars'][t]
     return []
 with open('/tmp/hj_py.txt','w') as f:

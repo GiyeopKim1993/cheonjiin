@@ -10,10 +10,16 @@
   2. 표제어 음절 수 == 한자 수
   3. 각 한자의 Unihan kHangul 음이 대응 음절과 일치        → 우연한 문자열 매칭 차단
 
-동음이의어 처리:
+동음이의어 처리 — **후보를 하나로 줄이지 않는다**:
   위키낱말사전은 한 문서에 여러 어원을 담는다(전화 = 田禾/典貨/電火/電化/電話...).
-  첫 매칭을 취하면 희귀어가 뽑히므로, 모든 후보를 모아 "구성 한자의 상용도"로 순위를 매긴다.
-  상용도 = 각 글자가 hanja-dict.json 음절 목록에서 차지하는 순위(앞일수록 상용).
+  이전 버전은 best 하나만 저장해서 '가정'에 假定만 남고 家庭이 사라졌다.
+  이제 유효 후보를 **전부** 보존하고 상용도 순으로 정렬해 배열로 저장한다.
+
+  정렬 기준 (앞일수록 먼저 제시):
+    1. 문서 내 등장 횟수가 많은 것   — 주표기일 가능성이 높다
+    2. 구성 한자의 상용도 합이 낮은 것 — 각 글자가 음절 목록 앞쪽일수록 상용
+
+  후보 상한(MAX_CANDS)을 둬 희귀 표기가 목록을 오염시키지 않게 한다.
 
 사용:
   python3 tools/fetch_words.py [덤프경로]     # 기본 /tmp/kowikt.xml.bz2
@@ -41,6 +47,11 @@ SIMPLIFIED = {
     "練":"練","恋":"戀","霊":"靈","齢":"齡","炉":"爐","湾":"灣","満":"滿","黙":"默",
     "訳":"譯","薬":"藥","様":"樣","与":"與","余":"餘","誉":"譽","予":"豫","landmark":"",
 }
+
+
+# 한 표제어에 남길 최대 후보 수. 위키는 벽자까지 싣기 때문에 상한이 없으면
+# '전화' 같은 항목에 田禾/典貨 같은 고어가 줄줄이 붙어 목록을 버린다.
+MAX_CANDS = 6
 
 
 def ks_x_1001_hanja():
@@ -117,6 +128,25 @@ def main():
         n = len(title)
         stats["hangulTitle"] += 1
 
+        # ── 어원 섹션별 "설명 분량"을 재본다 ──
+        # 위키낱말사전은 동음이의어를 "*어원: 한자 [[假定]]" 로 구분해 나열한다.
+        # 각 어원 섹션의 위키링크 수(유의어/합성어/파생어/번역)가 실사용 빈도를
+        # 가장 잘 반영한다. 실측: 家庭 16 vs 假定 7, 詐欺 53 vs 史記 4,
+        # 首都 90, 記事 56 — 사람이 기대하는 1순위와 일치했다.
+        # 문서 내 단순 등장 횟수는 신호가 약해(家庭 0회) 이걸로 대체한다.
+        etym_weight = {}
+        marks = [(mm.start(), mm.group(1))
+                 for mm in re.finditer(r"어원:\s*한자\s*\[\[([\u4E00-\u9FFF]+)\]\]", ko)]
+        for i, (pos, hj) in enumerate(marks):
+            end = marks[i + 1][0] if i + 1 < len(marks) else len(ko)
+            seg = ko[pos:end]
+            # 링크 수를 주 신호로, 분량을 보조로.
+            # 같은 한자가 여러 어원 섹션에 나뉘어 나오면 **합산**한다.
+            # (max 로 했더니 '가계'처럼 家計가 3개 섹션에 쪼개진 항목에서
+            #  각 섹션이 작아 家系 에 밀렸다 — 등장 자체가 빈도 신호다)
+            wgt = seg.count("[[") * 10 + len(seg) // 100
+            etym_weight[hj] = etym_weight.get(hj, 0) + wgt
+
         # 모든 유효 후보를 수집 (동음이의어 대비)
         cands = []
         for raw in hanja_run.findall(ko):
@@ -139,14 +169,36 @@ def main():
             continue
 
         # 문서 내 등장 횟수(많을수록 주표기) + 구성 한자 상용도로 순위
+        # ── 순위 결정 ──
+        # 세 신호를 각각 0~1 로 정규화해 가중합한다. 절대값끼리 비교하면
+        # 문서마다 스케일이 달라(어원가중 15~860) 한 신호가 나머지를 압도한다.
+        #
+        # 가중치 (1, 2, 1) 은 눈대중이 아니라 정답 세트로 정한 값이다:
+        #   spec/word-rank-truth.tsv (사람이 고른 1순위 50개)
+        #   격자탐색 최적 46/49(94%) · 5-fold 교차검증 평균 89.8%
+        #   -> 과적합이 아니며 5개 fold 중 3개에서 같은 값이 뽑혔다.
+        # 재현/재조정: python3 tools/tune_word_rank.py
+        W_ETYM, W_FREQ, W_USAGE = 1.0, 2.0, 1.0
+
         freq = collections.Counter(cands)
+        uniq = sorted(set(cands))
+        mx_e = max((etym_weight.get(x, 0) for x in uniq), default=0) or 1
+        mx_f = max(freq[x] for x in uniq) or 1
+        usage_of = {x: sum(rank.get((ch, syl), 99) for ch, syl in zip(x, title))
+                    for x in uniq}
+        mx_u = max(usage_of.values()) or 1
+
         def score(c):
-            usage = sum(rank.get((ch, syl), 99) for ch, syl in zip(c, title))
-            return (-freq[c], usage)
-        best = min(sorted(set(cands)), key=score)
-        words[title] = best
-        if len(set(cands)) > 1:
+            v = (W_ETYM  * (etym_weight.get(c, 0) / mx_e)
+               + W_FREQ  * (freq[c] / mx_f)
+               - W_USAGE * (usage_of[c] / mx_u))
+            # 점수 내림차순, 동점이면 상용도가 낮은(=흔한) 쪽 먼저
+            return (-v, usage_of[c])
+        ranked = sorted(set(cands), key=score)[:MAX_CANDS]
+        words[title] = ranked
+        if len(ranked) > 1:
             stats["homonym"] += 1
+            stats["extraCands"] += len(ranked) - 1
 
     sys.stderr.write("\n")
     print(f"문서 {seen:,} 스캔 / 한글 표제어 {stats['hangulTitle']:,}")

@@ -84,6 +84,32 @@ def is_han(ch):
             or 0xF900 <= cp <= 0xFAFF or 0x20000 <= cp <= 0x2FA1F)
 
 
+def audit_one(kor, han, kh, errs):
+    """표제어-후보 한 쌍을 검증한다."""
+    # 3. 한자 필드는 한자만
+    bad = [c for c in han if not is_han(c)]
+    if bad:
+        errs['비한자혼입'].append((kor, han, ''.join(bad)))
+        return
+    # 1. 길이 일치
+    if len(kor) != len(han):
+        errs['길이불일치'].append((kor, han, f'{len(kor)}!={len(han)}'))
+        return
+    # 2. 음가 대조
+    for i, (ks, hc) in enumerate(zip(kor, han)):
+        readings = kh.get(ord(hc))
+        if not readings:
+            errs['음가없음'].append((kor, han, f'{hc}(U+{ord(hc):04X}) kHangul 없음'))
+            return
+        if not (variants(ks) & readings):
+            errs['음가불일치'].append(
+                (kor, han, f'{i}번째 {ks}≠{hc}({"/".join(sorted(readings))})'))
+            return
+    # 5. 자기참조
+    if kor == han:
+        errs['자기참조'].append((kor, han, ''))
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     do_fix = '--fix' in sys.argv
@@ -101,33 +127,22 @@ def main():
 
     errs = defaultdict(list)
 
-    for kor, han in words.items():
-        # 4. 표제어는 한글 음절만
+    # words 값은 후보 배열이다(다중 후보 지원). 문자열이면 1개짜리로 취급.
+    # **모든 후보**를 검증한다 — 1순위만 보면 2순위 이하 오염을 놓친다.
+    for kor, cand_list in words.items():
+        if isinstance(cand_list, str):
+            cand_list = [cand_list]
+        # 4. 표제어는 한글 음절만 (후보와 무관하므로 한 번만)
         if not all(is_hangul_syllable(c) for c in kor):
-            errs['표제어이상'].append((kor, han, '한글 아닌 문자'))
+            errs['표제어이상'].append((kor, cand_list, '한글 아닌 문자'))
             continue
-        # 3. 한자 필드는 한자만
-        bad = [c for c in han if not is_han(c)]
-        if bad:
-            errs['비한자혼입'].append((kor, han, ''.join(bad)))
-            continue
-        # 1. 길이 일치
-        if len(kor) != len(han):
-            errs['길이불일치'].append((kor, han, f'{len(kor)}!={len(han)}'))
-            continue
-        # 2. 음가 대조
-        for i, (ks, hc) in enumerate(zip(kor, han)):
-            readings = kh.get(ord(hc))
-            if not readings:
-                errs['음가없음'].append((kor, han, f'{hc}(U+{ord(hc):04X}) kHangul 없음'))
-                break
-            if not (variants(ks) & readings):
-                errs['음가불일치'].append(
-                    (kor, han, f'{i}번째 {ks}≠{hc}({"/".join(sorted(readings))})'))
-                break
-        # 5. 자기참조
-        if kor == han:
-            errs['자기참조'].append((kor, han, ''))
+        # 중복 후보 검사
+        if len(cand_list) != len(set(cand_list)):
+            dup = [x for x in set(cand_list) if cand_list.count(x) > 1]
+            errs['후보중복'].append((kor, cand_list, ','.join(dup)))
+        for han in cand_list:
+            audit_one(kor, han, kh, errs)
+
 
     # chars 맵도 같은 방식으로 검증
     char_err = []
@@ -140,7 +155,7 @@ def main():
     total_err = sum(len(v) for v in errs.values())
     print(f"단어 {len(words):,}개 / 음절맵 {len(chars)}개 전수 검수")
     print(f"{'─' * 60}")
-    for k in ('표제어이상', '비한자혼입', '길이불일치', '음가없음', '음가불일치', '자기참조'):
+    for k in ('표제어이상', '비한자혼입', '길이불일치', '음가없음', '음가불일치', '자기참조', '후보중복'):
         v = errs.get(k, [])
         mark = '✅' if not v else '❌'
         print(f"{mark} {k:10s} {len(v):5,}건")
@@ -160,7 +175,7 @@ def main():
 
     if do_fix:
         drop = set()
-        for k in ('표제어이상', '비한자혼입', '길이불일치', '음가없음',
+        for k in ('표제어이상', '비한자혼입', '길이불일치', '음가없음', '후보중복',
                   '음가불일치', '자기참조'):
             for kor, han, _ in errs.get(k, []):
                 drop.add(kor)
