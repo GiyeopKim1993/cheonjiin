@@ -60,9 +60,31 @@ void hal_delay_ms(uint32_t ms);
  *   - 자체 디스플레이 : 화면에 직접
  */
 typedef enum {
-    HAL_OUT_HID_DUBEOLSIK = 0,  /* 두벌식 키코드 (기본 — 호스트 IME 사용) */
-    HAL_OUT_UNICODE_TEXT        /* UTF-8 문자열 직접 */
+    HAL_OUT_HID_DUBEOLSIK = 0,  /* 두벌식 키코드 (폴백 — 호스트 기본 IME가 조합) */
+    HAL_OUT_UNICODE_TEXT,       /* UTF-8 문자열 직접 (UART 디버깅) */
+    HAL_OUT_RAW_KEYEVENT        /* 원시 키 이벤트 — 조합은 호스트 IME 담당 */
 } hal_out_mode_t;
+
+/* ── HAL_OUT_RAW_KEYEVENT ──
+ *
+ * 디바이스는 "몇 번 키가 눌렸다/떨어졌다"만 보내고 조합에 일절 관여하지 않는다.
+ * 조합·타이머·프리에딧·한자 후보는 전부 호스트 IME 가 한다.
+ *
+ * 이 모드가 필요한 이유:
+ *   디바이스가 조합을 끝내버리면 (1) 조합 중 글자를 화면에 못 보여주고
+ *   (2) 한자 사전(794KB)이 F411 플래시(512KB)에 안 들어가고
+ *   (3) 조합이 디바이스와 호스트에서 두 번 일어난다.
+ *
+ * 이 모드에서 app 계층은 코어를 호출하지 않는다. cuime_app_poll() 이
+ * 스캔·디바운스·에지검출만 하고 hal_out_keyevent() 로 곧장 넘긴다.
+ * 롱프레스/멀티탭 타이머도 호스트가 굴린다 — 디바이스는 시간을 재지 않는다.
+ */
+void hal_out_keyevent(cuime_key_t key, bool pressed);
+
+/** 호스트 IME 가 붙어 있는가.
+ *  RAW 모드에서 IME 가 죽으면 두벌식 폴백으로 돌아가야 한다.
+ *  구현체는 하트비트 타임아웃 등으로 판정한다. */
+bool hal_out_ime_attached(void);
 
 void hal_out_init(void);
 

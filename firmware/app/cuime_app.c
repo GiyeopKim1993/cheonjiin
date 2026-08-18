@@ -306,6 +306,34 @@ void cuime_app_poll(cuime_app_t *app)
     hal_keymask_t now_mask = hal_keys_scan();
     hal_keymask_t changed = now_mask ^ app->prev_mask;
 
+    /* ── RAW 모드: 조합기를 완전히 우회한다 ──
+     * 호스트 IME 가 붙어 있으면 디바이스는 키 이벤트만 중계한다.
+     * 코어를 호출하지 않으므로 타이머(tick)도 돌리지 않는다 —
+     * 멀티탭·롱프레스 판정은 전부 호스트 몫이다.
+     *
+     * IME 가 떨어지면(하트비트 끊김) 자동으로 아래 조합 경로로 복귀한다.
+     * 그때 조합 상태가 남아 있으면 안 되므로 진입 시 한 번 비운다. */
+    if (hal_out_mode() == HAL_OUT_RAW_KEYEVENT && hal_out_ime_attached()) {
+        if (!app->raw_active) {
+            cuime_evlist_t ev; ev.count = 0;
+            cuime_flush(&app->core, &ev);   /* 조합 중이던 글자 확정 후 비움 */
+            drain(app, &ev);
+            app->raw_active = true;
+        }
+        for (int i = 0; i < CUIME_KEY__COUNT; i++) {
+            hal_keymask_t bit = (hal_keymask_t)1u << i;
+            if (!(changed & bit)) continue;
+            hal_out_keyevent((cuime_key_t)i, (now_mask & bit) != 0);
+        }
+        app->prev_mask = now_mask;
+        return;
+    }
+    if (app->raw_active) {
+        /* RAW -> 조합 모드 복귀. 코어 상태를 초기화해 유령 입력을 막는다. */
+        cuime_init(&app->core);
+        app->raw_active = false;
+    }
+
     for (int i = 0; i < CUIME_KEY__COUNT; i++) {
         hal_keymask_t bit = (hal_keymask_t)1u << i;
         if (!(changed & bit)) continue;

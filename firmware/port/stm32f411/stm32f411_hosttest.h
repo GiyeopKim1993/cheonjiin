@@ -54,6 +54,9 @@ void        fake_uart_reset(void);
 const char *fake_uart_hex(void);
 /* LED(PC13): 마지막 BSRR 쓰기로 판정. true = 점등(Low) */
 bool        fake_led_on(void);
+void        fake_ime_attach(bool on);
+void        fake_raw_reset(void);
+const char *fake_raw_hex(void);
 #ifdef CUIME_F411_USB_HID
 void        fake_hid_reset(void);
 const char *fake_hid_hex(void);

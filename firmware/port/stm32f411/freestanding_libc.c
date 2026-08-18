@@ -58,3 +58,24 @@ size_t strlen(const char *s)
     while (*p) p++;
     return (size_t)(p - s);
 }
+
+/* ── ARM EABI 헬퍼 ──
+ * 컴파일러가 배열 0-초기화 등을 이 함수 호출로 바꾼다(-Os 에서 특히).
+ * libgcc/newlib 이 없는 베어메탈에서는 직접 제공해야 링크된다.
+ * 실제로 `uint8_t r[32] = {0};` 하나 때문에 __aeabi_memclr4 가 필요했다.
+ */
+void __aeabi_memclr(void *dst, size_t n)  { memset(dst, 0, n); }
+void __aeabi_memclr4(void *dst, size_t n) { memset(dst, 0, n); }
+void __aeabi_memclr8(void *dst, size_t n) { memset(dst, 0, n); }
+
+void __aeabi_memcpy(void *d, const void *s, size_t n)  { memcpy(d, s, n); }
+void __aeabi_memcpy4(void *d, const void *s, size_t n) { memcpy(d, s, n); }
+void __aeabi_memcpy8(void *d, const void *s, size_t n) { memcpy(d, s, n); }
+
+void __aeabi_memset(void *d, size_t n, int c)  { memset(d, c, n); }
+void __aeabi_memset4(void *d, size_t n, int c) { memset(d, c, n); }
+void __aeabi_memset8(void *d, size_t n, int c) { memset(d, c, n); }
+
+void __aeabi_memmove(void *d, const void *s, size_t n)  { memmove(d, s, n); }
+void __aeabi_memmove4(void *d, const void *s, size_t n) { memmove(d, s, n); }
+void __aeabi_memmove8(void *d, const void *s, size_t n) { memmove(d, s, n); }

@@ -182,3 +182,15 @@ void hal_board_init(void)
     hal_keys_init();
     hal_out_init();
 }
+
+/* ── 원시 키 이벤트 (HAL_OUT_RAW_KEYEVENT) ──
+ * 이 포트는 RAW 전송 경로가 없다. hal_out_mode() 가 RAW 를 반환하지 않으므로
+ * app 계층이 이 함수를 호출하지 않지만, 링크 심볼은 있어야 한다.
+ * ime_attached 가 항상 false 이므로 조합 경로로만 동작한다.
+ */
+void hal_out_keyevent(cuime_key_t key, bool pressed)
+{
+    (void)key; (void)pressed;
+}
+
+bool hal_out_ime_attached(void) { return false; }

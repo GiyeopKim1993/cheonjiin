@@ -255,6 +255,11 @@ void hal_out_init(void)
 
 hal_out_mode_t hal_out_mode(void)
 {
+#if defined(CUIME_F411_RAWHID) || defined(CUIME_F411_HOSTTEST)
+    /* 커스텀 HID 빌드: 호스트 IME 가 붙어 있으면 조합을 넘긴다.
+     * IME 가 없으면 두벌식 폴백으로 동작해야 하므로 여기서 분기한다. */
+    if (hal_out_ime_attached()) return HAL_OUT_RAW_KEYEVENT;
+#endif
 #ifdef CUIME_F411_USB_HID
     return HAL_OUT_HID_DUBEOLSIK;
 #else
@@ -393,3 +398,16 @@ void hal_board_init(void)
     hal_keys_init();
     hal_out_init();
 }
+
+/* ── 원시 키 이벤트 (RAWHID 빌드가 아닐 때의 기본 구현) ──
+ * RAWHID=1 이면 usb_rawhid.c 가 진짜 구현을 제공한다.
+ * 그 외 빌드(UART 데모·두벌식 HID)에서는 전송 경로가 없으므로
+ * ime_attached 를 false 로 두어 조합 경로로만 동작하게 한다.
+ */
+#if !defined(CUIME_F411_RAWHID) && !defined(CUIME_F411_HOSTTEST)
+void hal_out_keyevent(cuime_key_t key, bool pressed)
+{
+    (void)key; (void)pressed;
+}
+bool hal_out_ime_attached(void) { return false; }
+#endif

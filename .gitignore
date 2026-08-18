@@ -25,3 +25,9 @@ ime/ios/.build/
 
 # 대용량 중간 산출물 (spec/hanja-dict.json 에서 재생성)
 spec/words-raw.json
+
+# 외부 SDK — 절대 커밋하지 않는다.
+# firmware/tools/fetch_sdk.sh 가 /tmp 에 받아 쓰고 빌드 후 지운다.
+tinyusb/
+tinyusb-*/
+tusb_config.h

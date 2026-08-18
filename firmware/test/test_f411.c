@@ -267,6 +267,60 @@ int main(void)
     }
 #endif
 
+#ifndef CUIME_F411_USB_HID   /* UART 출력으로 검증하므로 HID 모드는 제외 */
+    /* ── 8. RAW 키이벤트 모드 (호스트 IME 연동) ──
+     * IME 가 붙으면 디바이스는 조합을 멈추고 키 이벤트만 중계해야 한다.
+     * 조합 결과(UART UTF-8)가 나오면 안 된다 — 그러면 이중 입력이 된다.
+     */
+    {
+        cuime_app_t app;
+        hal_keys_init();
+        cuime_app_init(&app);
+
+        #define PRESS(r, c) do {                                  \
+            fk_press_row = (r); fk_press_col = (c);               \
+            for (int _i = 0; _i < 4; _i++) cuime_app_poll(&app);  \
+            fk_press_row = -1; fk_press_col = -1;                 \
+            for (int _i = 0; _i < 4; _i++) cuime_app_poll(&app);  \
+        } while (0)
+
+        /* (a) IME 미접속 = 기존 조합 경로 */
+        fake_ime_attach(false);
+        chk("IME 없으면 조합 모드", hal_out_mode(), HAL_OUT_UNICODE_TEXT);
+        fake_uart_reset(); fake_raw_reset();
+        PRESS(1, 0); PRESS(0, 0); PRESS(0, 1); PRESS(3, 3);
+        chks("IME 없음: 조합 결과 '가 ' 출력", fake_uart_hex(), "EAB08020");
+        chks("IME 없음: RAW 전송 없음", fake_raw_hex(), "");
+
+        /* (b) IME 접속 = RAW 중계, 조합 안 함 */
+        cuime_app_init(&app);
+        hal_keys_init();
+        fake_ime_attach(true);
+        chk("IME 접속 시 RAW 모드", hal_out_mode(), HAL_OUT_RAW_KEYEVENT);
+        fake_uart_reset(); fake_raw_reset();
+        PRESS(1, 0);      /* K4 = ㄱ */
+        /* K4=3 이므로 down(03 01) + up(03 00) */
+        chks("RAW: K4 누름/뗌 전송", fake_raw_hex(), "03010300");
+        chks("RAW: UART 조합 출력 없음 (이중입력 방지)", fake_uart_hex(), "");
+
+        /* (c) 여러 키를 눌러도 조합하지 않는다 */
+        fake_raw_reset(); fake_uart_reset();
+        PRESS(0, 0);      /* K1 = 0 */
+        PRESS(0, 1);      /* K2 = 1 */
+        chks("RAW: K1,K2 순서대로 중계", fake_raw_hex(), "0001000001010100");
+        chks("RAW: 여전히 조합 출력 없음", fake_uart_hex(), "");
+
+        /* (d) IME 이탈 -> 조합 모드 자동 복귀 */
+        fake_ime_attach(false);
+        chk("IME 이탈 시 조합 모드 복귀", hal_out_mode(), HAL_OUT_UNICODE_TEXT);
+        fake_uart_reset(); fake_raw_reset();
+        PRESS(1, 0); PRESS(0, 0); PRESS(0, 1); PRESS(3, 3);
+        chks("복귀 후 조합 정상 ('가 ')", fake_uart_hex(), "EAB08020");
+        chks("복귀 후 RAW 전송 없음", fake_raw_hex(), "");
+        #undef PRESS
+    }
+#endif /* !CUIME_F411_USB_HID */
+
     printf("\n%s\n", fails == 0
         ? "✅ F411 포트 로직 전 항목 통과"
         : "❌ 실패 있음");

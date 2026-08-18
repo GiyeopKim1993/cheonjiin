@@ -46,6 +46,7 @@ typedef struct {
     uint8_t      cand_count;
     uint8_t      cand_index;
     cuime_hanja_fn hanja_lookup;
+    bool     raw_active;      /* RAW 키이벤트 모드로 동작 중 (모드 전환 감지용) */
 
     /* 기호 팔레트 */
     bool         palette_open;

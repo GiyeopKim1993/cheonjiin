@@ -1,5 +1,6 @@
 /* 가짜 레지스터 구현 — 호스트 테스트 전용 */
 #include "../port/stm32f411/stm32f411_hosttest.h"
+#include "../core/cuime.h"   /* cuime_key_t */
 #include <stdio.h>
 #include <string.h>
 
@@ -84,3 +85,29 @@ const char *fake_hid_hex(void)
     return hid_hex;
 }
 #endif
+
+/* ── RAW 키이벤트 모드 가짜 구현 (호스트 테스트) ── */
+static uint8_t raw_cap[256];
+static int raw_n;
+static char raw_hex[600];
+static bool raw_attached;
+
+void fake_ime_attach(bool on) { raw_attached = on; }
+bool hal_out_ime_attached(void) { return raw_attached; }
+
+void hal_out_keyevent(cuime_key_t key, bool pressed)
+{
+    if (raw_n + 2 <= (int)sizeof raw_cap) {
+        raw_cap[raw_n++] = (uint8_t)key;
+        raw_cap[raw_n++] = pressed ? 1 : 0;
+    }
+}
+void fake_raw_reset(void) { raw_n = 0; raw_hex[0] = 0; }
+const char *fake_raw_hex(void)
+{
+    int p = 0;
+    for (int i = 0; i < raw_n && p + 3 < (int)sizeof raw_hex; i++)
+        p += snprintf(raw_hex + p, sizeof raw_hex - p, "%02X", raw_cap[i]);
+    raw_hex[p] = 0;
+    return raw_hex;
+}
