@@ -245,6 +245,36 @@ jobs:
         run: |
           arm-none-eabi-size -t /tmp/armobj/*.cortex-m0plus.o
 
+      - name: STM32F411 실기기 펌웨어 (링크까지 = 플래시 가능한 바이너리)
+        run: |
+          # 위 단계는 .o 까지만 만든다. 여기서는 스타트업·링커스크립트를 포함해
+          # 실제로 보드에 구울 수 있는 .bin/.hex 를 만들고, 정적 검증과
+          # 호스트 로직 검증(E2E 조합 테스트)까지 돌린다.
+          cd firmware/port/stm32f411
+          ./build.sh
+          echo "=== 산출물 ==="
+          ls -la build/cuime-f411.bin build/cuime-f411.hex build/cuime-f411.elf
+
+      - name: STM32F411 빌드 변형 (HSE / USB HID)
+        run: |
+          cd firmware/port/stm32f411
+          for CFG in "USE_HSE=1" "USB_HID=1" "USE_HSE=1 USB_HID=1"; do
+            echo "=== $CFG ==="
+            env $CFG ./build.sh > /tmp/v.log 2>&1 \
+              || { echo "[FAIL] $CFG"; tail -30 /tmp/v.log; exit 1; }
+            grep -E "FLASH " /tmp/v.log | head -1
+          done
+          echo "✅ 4개 빌드 변형 모두 통과"
+
+      - name: 펌웨어 바이너리 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-stm32f411
+          path: |
+            firmware/port/stm32f411/build/cuime-f411.bin
+            firmware/port/stm32f411/build/cuime-f411.hex
+            firmware/port/stm32f411/build/cuime-f411.elf
+
   # ───────── 9. iOS 키보드 확장 ─────────
   ios:
     name: iOS 키보드 확장 (Swift)

@@ -33,4 +33,19 @@ else
   echo "  (건너뜀: test/seq_*.txt 없음)"
 fi
 echo
+echo "── 4. STM32F411 실기기 데모 (크로스 빌드 + 로직 검증) ──"
+# 다른 포트와 달리 F411 은 레지스터 직접 제어라 port_stub_main 으로 돌릴 수 없다.
+# 전용 스크립트가 크로스 빌드(zig/arm-none-eabi) + 정적 검증 + 호스트 로직 검증을 한다.
+if python3 -m ziglang version >/dev/null 2>&1 || command -v arm-none-eabi-gcc >/dev/null 2>&1; then
+  if (cd port/stm32f411 && ./build.sh >/tmp/f411_build.log 2>&1); then
+    SZ=$(grep -oP 'FLASH \K[0-9,]+' /tmp/f411_build.log | head -1)
+    echo "  ✅ stm32f411: 크로스 빌드 + 로직 검증 통과 (FLASH ${SZ} B)"
+  else
+    echo "  ❌ stm32f411 실패:"; tail -20 /tmp/f411_build.log; exit 1
+  fi
+else
+  echo "  SKIPPED (ARM 툴체인 없음: pip install --user ziglang)"
+fi
+
+echo
 echo "✅ 펌웨어 전체 검증 통과"
