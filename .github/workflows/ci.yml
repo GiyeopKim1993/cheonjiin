@@ -72,29 +72,30 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: android-actions/setup-android@v3
 
-      - name: Gradle 래퍼 준비
+      # aapt2/javac/d8/apksigner 직접 호출. Gradle 은 AGP 플러그인 해석에
+      # 실패했고(Plugin 'com.android.application' not found), 데몬·네트워크
+      # 의존도 크다. 로컬에서 검증된 스크립트를 그대로 쓴다.
+      - name: APK 빌드 (SDK 툴 직접)
+        working-directory: ime/android
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: ./build-apk.sh
+
+      - name: APK 검증 (서명·IME 서비스 등록)
         working-directory: ime/android
         run: |
-          cat > settings.gradle <<'EOF'
-          pluginManagement {
-            repositories { google(); mavenCentral(); gradlePluginPortal() }
-          }
-          dependencyResolutionManagement {
-            repositories { google(); mavenCentral() }
-          }
-          rootProject.name = 'cuime'
-          EOF
-          gradle wrapper --gradle-version 8.7
-
-      - name: assembleDebug
-        working-directory: ime/android
-        run: ./gradlew assembleDebug --stacktrace
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/apksigner" verify --print-certs build-apk/cuime-debug.apk
+          "$BT/aapt2" dump xmltree build-apk/cuime-debug.apk --file AndroidManifest.xml \
+            | grep -q "android.view.InputMethod" \
+            || { echo "❌ IME 서비스 미등록"; exit 1; }
+          echo "✅ 서명·IME 서비스 등록 확인"
 
       - name: APK 업로드
         uses: actions/upload-artifact@v4
         with:
           name: cuime-debug-apk
-          path: ime/android/build/outputs/apk/debug/*.apk
+          path: ime/android/build-apk/cuime-debug.apk
           if-no-files-found: error
 
   # ───────── 4. Windows TSF DLL ─────────
@@ -109,18 +110,18 @@ jobs:
         working-directory: ime/native
         shell: cmd
         run: |
-          cl /std:c++17 /EHsc /utf-8 /Fe:test_core.exe test.cpp || exit /b 1
+          cl /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_core.exe test.cpp || exit /b 1
           test_core.exe || exit /b 1
-          cl /std:c++17 /EHsc /utf-8 /Fe:test_shell.exe test_shell.cpp || exit /b 1
+          cl /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_shell.exe test_shell.cpp || exit /b 1
           test_shell.exe || exit /b 1
-          cl /std:c++17 /EHsc /utf-8 /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
+          cl /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
           test_tsf.exe || exit /b 1
 
       - name: TSF DLL 빌드
         working-directory: ime/native
         shell: cmd
         run: |
-          cl /std:c++17 /EHsc /utf-8 /LD /Fe:cuime.dll tsf_textservice.cpp ^
+          cl /std:c++17 /EHsc /utf-8 /bigobj /LD /Fe:cuime.dll tsf_textservice.cpp ^
              /link ole32.lib oleaut32.lib advapi32.lib user32.lib || exit /b 1
 
       - name: DLL 업로드
@@ -240,3 +241,65 @@ jobs:
       - name: 코드 크기 (플래시 예산)
         run: |
           arm-none-eabi-size -t /tmp/armobj/*.cortex-m0plus.o
+
+  # ───────── 9. iOS 키보드 확장 ─────────
+  ios:
+    name: iOS 키보드 확장 (Swift)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: Swift 버전
+        run: swift --version
+
+      - name: 코어 전수 동일성 (Swift == Python)
+        run: |
+          mkdir -p /tmp/xl
+          cd ime/ios
+          swiftc -O -o /tmp/xl/swdump CheonjiinCore.swift test/xldump/main.swift
+          /tmp/xl/swdump /tmp/xl/swift.txt
+          cd ../../tools
+          python3 -c "
+          from engine import CHO,JUNG,JONG,compose
+          from encoder import encode
+          for c in CHO:
+            for v in JUNG:
+              for j in JONG:
+                ch=compose(c,v,j.strip())
+                print(ch+'\t'+' '.join('KRIGHT' if k=='TIMEOUT' else k for k in encode(ch)))
+          " > /tmp/xl/py.txt
+          diff /tmp/xl/py.txt /tmp/xl/swift.txt \
+            && echo "✅ Swift == Python 전수 동일" \
+            || { echo "❌ 코어 불일치"; exit 1; }
+
+      - name: CompositionBridge 검증 (marked text / 폴백 동치)
+        working-directory: ime/ios
+        run: |
+          swiftc -O -o /tmp/bridge CheonjiinCore.swift CompositionBridge.swift test/bridge/main.swift
+          /tmp/bridge
+
+      - name: iOS 실제 빌드 (UIKit, arm64)
+        working-directory: ime/ios
+        run: |
+          xcrun --sdk iphoneos swiftc -target arm64-apple-ios13.0 \
+            -sdk "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -emit-module -emit-object -O \
+            CheonjiinCore.swift CompositionBridge.swift \
+            KeypadView.swift KeyboardViewController.swift \
+            -module-name CuimeKeyboard -o /tmp/cuime_ios.o
+          echo "✅ 실제 UIKit 기반 iOS arm64 컴파일 통과"
+
+      - name: Info.plist 검증
+        working-directory: ime/ios
+        run: |
+          python3 -c "
+          import plistlib
+          d=plistlib.load(open('Info.plist','rb'))
+          e=d['NSExtension']
+          assert e['NSExtensionPointIdentifier']=='com.apple.keyboard-service'
+          assert 'KeyboardViewController' in e['NSExtensionPrincipalClass']
+          assert e['NSExtensionAttributes']['RequestsOpenAccess'] is False
+          print('✅ Info.plist 유효')
+          "
