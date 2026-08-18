@@ -64,6 +64,11 @@ else
   SKIPPED="$SKIPPED 사전정밀도(Unihan)"
 fi
 
+echo; echo "════════ 2c-3. 물리 키보드 브리지 (원시 키이벤트 -> IME) ════════"
+(cd ime/device && node test-proto-sync.js | tail -2)
+(cd ime/device && node test-bridge.js    | tail -1)
+(cd ime/device && node test-transport.js | tail -1)
+
 echo; echo "════════ 2c-2. iOS (Swift 코어 + 브리지 + UIKit 타입체크) ════════"
 SWIFTC="${SWIFTC:-$(command -v swiftc || echo /home/user/swift/usr/bin/swiftc)}"
 export SWIFTC          # 하위 스크립트로 전달 (없으면 ios/run-tests.sh 가 못 찾는다)

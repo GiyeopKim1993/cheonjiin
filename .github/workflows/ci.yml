@@ -35,6 +35,35 @@ jobs:
           if-no-files-found: ignore
 
   # ───────── 2. 웹 E2E (실제 브라우저) ─────────
+  device:
+    name: 물리 키보드 브리지 (원시 키이벤트 -> IME)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: 프로토콜 상수 동기화 (C 헤더 ↔ JS)
+        run: |
+          # 펌웨어와 IME 가 같은 숫자를 두 곳에 적어둔다. 어긋나면
+          # 컴파일도 되고 테스트도 통과하지만 실기기에서만 조용히 깨진다.
+          cd ime/device && node test-proto-sync.js
+
+      - name: 브리지 로직 (조합·멀티탭·한자·패킷유실)
+        run: cd ime/device && node test-bridge.js
+
+      - name: USB 전송 계층 (복합장치 인터페이스 선택)
+        run: cd ime/device && node test-transport.js
+
+      - name: 데모 구동 (장치 없이 실제 조합)
+        run: |
+          cd ime/device
+          OUT=$(timeout 60 node cuime-device.js --demo 2>&1 | tr '\r' '\n' | tail -20)
+          echo "$OUT"
+          echo "$OUT" | grep -q '한\[글\]' \
+            || { echo "❌ 데모가 '한글' 을 조합하지 못했다"; exit 1; }
+          echo "✅ 데모 조합 확인"
+
   e2e:
     name: E2E (Chrome)
     runs-on: ubuntu-latest
