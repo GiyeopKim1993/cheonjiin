@@ -117,15 +117,15 @@ jobs:
           cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_shell.exe test_shell.cpp || exit /b 1
           test_shell.exe || (echo [FAIL] test_shell & exit /b 1)
           echo === tsf stub ===
-          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp || exit /b 1
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp /link /STACK:8388608 || exit /b 1
           test_tsf.exe || (echo [FAIL] test_tsf & exit /b 1)
 
       - name: TSF DLL 빌드
         working-directory: ime/native
         shell: cmd
         run: |
-          cl /std:c++17 /EHsc /utf-8 /bigobj /LD /Fe:cuime.dll tsf_textservice.cpp ^
-             /link ole32.lib oleaut32.lib advapi32.lib user32.lib || exit /b 1
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /LD /Fe:cuime.dll tsf_textservice.cpp ^
+             /link /STACK:8388608 ole32.lib oleaut32.lib advapi32.lib user32.lib || exit /b 1
 
       - name: DLL 업로드
         uses: actions/upload-artifact@v4
