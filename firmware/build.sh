@@ -44,7 +44,9 @@ if python3 -m ziglang version >/dev/null 2>&1 || command -v arm-none-eabi-gcc >/
     echo "  ❌ stm32f411 실패:"; tail -20 /tmp/f411_build.log; exit 1
   fi
 else
-  echo "  SKIPPED (ARM 툴체인 없음: pip install --user ziglang)"
+  echo "  SKIPPED (ARM 툴체인 없음)"
+  echo "     로컬에서 돌리려면: pip install --user ziglang"
+  echo "     CI 에서는 이 뒤의 전용 단계가 arm-none-eabi-gcc 로 빌드합니다."
 fi
 
 echo
