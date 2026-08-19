@@ -1,0 +1,636 @@
+{
+ "vowel": [
+  {
+   "jamo": "ㅏ",
+   "keys": "12",
+   "taps": 2,
+   "render": "아"
+  },
+  {
+   "jamo": "ㅐ",
+   "keys": "121",
+   "taps": 3,
+   "render": "애"
+  },
+  {
+   "jamo": "ㅑ",
+   "keys": "122",
+   "taps": 3,
+   "render": "야"
+  },
+  {
+   "jamo": "ㅒ",
+   "keys": "1221",
+   "taps": 4,
+   "render": "얘"
+  },
+  {
+   "jamo": "ㅓ",
+   "keys": "21",
+   "taps": 2,
+   "render": "어"
+  },
+  {
+   "jamo": "ㅔ",
+   "keys": "211",
+   "taps": 3,
+   "render": "에"
+  },
+  {
+   "jamo": "ㅕ",
+   "keys": "221",
+   "taps": 3,
+   "render": "여"
+  },
+  {
+   "jamo": "ㅖ",
+   "keys": "2211",
+   "taps": 4,
+   "render": "예"
+  },
+  {
+   "jamo": "ㅗ",
+   "keys": "23",
+   "taps": 2,
+   "render": "오"
+  },
+  {
+   "jamo": "ㅘ",
+   "keys": "2312",
+   "taps": 4,
+   "render": "와"
+  },
+  {
+   "jamo": "ㅙ",
+   "keys": "23121",
+   "taps": 5,
+   "render": "왜"
+  },
+  {
+   "jamo": "ㅚ",
+   "keys": "231",
+   "taps": 3,
+   "render": "외"
+  },
+  {
+   "jamo": "ㅛ",
+   "keys": "223",
+   "taps": 3,
+   "render": "요"
+  },
+  {
+   "jamo": "ㅜ",
+   "keys": "32",
+   "taps": 2,
+   "render": "우"
+  },
+  {
+   "jamo": "ㅝ",
+   "keys": "3212",
+   "taps": 4,
+   "render": "워"
+  },
+  {
+   "jamo": "ㅞ",
+   "keys": "32121",
+   "taps": 5,
+   "render": "웨"
+  },
+  {
+   "jamo": "ㅟ",
+   "keys": "321",
+   "taps": 3,
+   "render": "위"
+  },
+  {
+   "jamo": "ㅠ",
+   "keys": "322",
+   "taps": 3,
+   "render": "유"
+  },
+  {
+   "jamo": "ㅡ",
+   "keys": "3",
+   "taps": 1,
+   "render": "으"
+  },
+  {
+   "jamo": "ㅢ",
+   "keys": "31",
+   "taps": 2,
+   "render": "의"
+  },
+  {
+   "jamo": "ㅣ",
+   "keys": "1",
+   "taps": 1,
+   "render": "이"
+  }
+ ],
+ "cho": [
+  {
+   "jamo": "ㄱ",
+   "keys": "4",
+   "taps": 1,
+   "render": "가"
+  },
+  {
+   "jamo": "ㄲ",
+   "keys": "444",
+   "taps": 3,
+   "render": "까"
+  },
+  {
+   "jamo": "ㄴ",
+   "keys": "5",
+   "taps": 1,
+   "render": "나"
+  },
+  {
+   "jamo": "ㄷ",
+   "keys": "6",
+   "taps": 1,
+   "render": "다"
+  },
+  {
+   "jamo": "ㄸ",
+   "keys": "666",
+   "taps": 3,
+   "render": "따"
+  },
+  {
+   "jamo": "ㄹ",
+   "keys": "55",
+   "taps": 2,
+   "render": "라"
+  },
+  {
+   "jamo": "ㅁ",
+   "keys": "00",
+   "taps": 2,
+   "render": "마"
+  },
+  {
+   "jamo": "ㅂ",
+   "keys": "7",
+   "taps": 1,
+   "render": "바"
+  },
+  {
+   "jamo": "ㅃ",
+   "keys": "777",
+   "taps": 3,
+   "render": "빠"
+  },
+  {
+   "jamo": "ㅅ",
+   "keys": "8",
+   "taps": 1,
+   "render": "사"
+  },
+  {
+   "jamo": "ㅆ",
+   "keys": "888",
+   "taps": 3,
+   "render": "싸"
+  },
+  {
+   "jamo": "ㅇ",
+   "keys": "0",
+   "taps": 1,
+   "render": "아"
+  },
+  {
+   "jamo": "ㅈ",
+   "keys": "9",
+   "taps": 1,
+   "render": "자"
+  },
+  {
+   "jamo": "ㅉ",
+   "keys": "999",
+   "taps": 3,
+   "render": "짜"
+  },
+  {
+   "jamo": "ㅊ",
+   "keys": "99",
+   "taps": 2,
+   "render": "차"
+  },
+  {
+   "jamo": "ㅋ",
+   "keys": "44",
+   "taps": 2,
+   "render": "카"
+  },
+  {
+   "jamo": "ㅌ",
+   "keys": "66",
+   "taps": 2,
+   "render": "타"
+  },
+  {
+   "jamo": "ㅍ",
+   "keys": "77",
+   "taps": 2,
+   "render": "파"
+  },
+  {
+   "jamo": "ㅎ",
+   "keys": "88",
+   "taps": 2,
+   "render": "하"
+  }
+ ],
+ "alt": [
+  {
+   "jamo": "ㅋ",
+   "keys": "4*",
+   "taps": 2,
+   "render": "카",
+   "ok": true
+  },
+  {
+   "jamo": "ㄲ",
+   "keys": "4#",
+   "taps": 2,
+   "render": "까",
+   "ok": true
+  },
+  {
+   "jamo": "ㅌ",
+   "keys": "6*",
+   "taps": 2,
+   "render": "타",
+   "ok": true
+  },
+  {
+   "jamo": "ㄸ",
+   "keys": "6#",
+   "taps": 2,
+   "render": "따",
+   "ok": true
+  },
+  {
+   "jamo": "ㅍ",
+   "keys": "7*",
+   "taps": 2,
+   "render": "파",
+   "ok": true
+  },
+  {
+   "jamo": "ㅃ",
+   "keys": "7#",
+   "taps": 2,
+   "render": "빠",
+   "ok": true
+  },
+  {
+   "jamo": "ㅎ",
+   "keys": "0*",
+   "taps": 2,
+   "render": "하",
+   "ok": true
+  },
+  {
+   "jamo": "ㅆ",
+   "keys": "8#",
+   "taps": 2,
+   "render": "싸",
+   "ok": true
+  },
+  {
+   "jamo": "ㅊ",
+   "keys": "9*",
+   "taps": 2,
+   "render": "차",
+   "ok": true
+  },
+  {
+   "jamo": "ㅉ",
+   "keys": "9#",
+   "taps": 2,
+   "render": "짜",
+   "ok": true
+  },
+  {
+   "jamo": "ㄷ",
+   "keys": "5*",
+   "taps": 2,
+   "render": "다",
+   "ok": true
+  },
+  {
+   "jamo": "ㅈ",
+   "keys": "8*",
+   "taps": 2,
+   "render": "자",
+   "ok": true
+  }
+ ],
+ "jong": [
+  {
+   "cluster": "ㄳ",
+   "sample": "갃",
+   "keys": "41248",
+   "taps": 5,
+   "render": "갃"
+  },
+  {
+   "cluster": "ㄵ",
+   "sample": "갅",
+   "keys": "41259",
+   "taps": 5,
+   "render": "갅"
+  },
+  {
+   "cluster": "ㄶ",
+   "sample": "갆",
+   "keys": "412588",
+   "taps": 6,
+   "render": "갆"
+  },
+  {
+   "cluster": "ㄺ",
+   "sample": "갉",
+   "keys": "412554",
+   "taps": 6,
+   "render": "갉"
+  },
+  {
+   "cluster": "ㄻ",
+   "sample": "갊",
+   "keys": "4125500",
+   "taps": 7,
+   "render": "갊"
+  },
+  {
+   "cluster": "ㄼ",
+   "sample": "갋",
+   "keys": "412557",
+   "taps": 6,
+   "render": "갋"
+  },
+  {
+   "cluster": "ㄽ",
+   "sample": "갌",
+   "keys": "412558",
+   "taps": 6,
+   "render": "갌"
+  },
+  {
+   "cluster": "ㄾ",
+   "sample": "갍",
+   "keys": "4125566",
+   "taps": 7,
+   "render": "갍"
+  },
+  {
+   "cluster": "ㄿ",
+   "sample": "갎",
+   "keys": "4125577",
+   "taps": 7,
+   "render": "갎"
+  },
+  {
+   "cluster": "ㅀ",
+   "sample": "갏",
+   "keys": "4125588",
+   "taps": 7,
+   "render": "갏"
+  },
+  {
+   "cluster": "ㅄ",
+   "sample": "값",
+   "keys": "41278",
+   "taps": 5,
+   "render": "값"
+  }
+ ],
+ "word": [
+  {
+   "word": "나무위키",
+   "keys": "51200320321441",
+   "taps": 14,
+   "per_char": 3.5,
+   "render": "나무위키"
+  },
+  {
+   "word": "한글",
+   "keys": "881254355",
+   "taps": 9,
+   "per_char": 4.5,
+   "render": "한글"
+  },
+  {
+   "word": "안녕하세요",
+   "keys": "0125·52210881282110223",
+   "taps": 21,
+   "per_char": 4.2,
+   "render": "안녕하세요"
+  },
+  {
+   "word": "고양이",
+   "keys": "42301220·01",
+   "taps": 10,
+   "per_char": 3.33,
+   "render": "고양이"
+  },
+  {
+   "word": "꽃",
+   "keys": "4442399",
+   "taps": 7,
+   "per_char": 7.0,
+   "render": "꽃"
+  },
+  {
+   "word": "빨래",
+   "keys": "7771255·55121",
+   "taps": 12,
+   "per_char": 6.0,
+   "render": "빨래"
+  },
+  {
+   "word": "웃음",
+   "keys": "03280300",
+   "taps": 8,
+   "per_char": 4.0,
+   "render": "웃음"
+  },
+  {
+   "word": "짜장면",
+   "keys": "999129120·002215",
+   "taps": 15,
+   "per_char": 5.0,
+   "render": "짜장면"
+  },
+  {
+   "word": "떡볶이",
+   "keys": "66621472344401",
+   "taps": 14,
+   "per_char": 4.67,
+   "render": "떡볶이"
+  },
+  {
+   "word": "괜찮아",
+   "keys": "42312159912588012",
+   "taps": 17,
+   "per_char": 5.67,
+   "render": "괜찮아"
+  },
+  {
+   "word": "값",
+   "keys": "41278",
+   "taps": 5,
+   "per_char": 5.0,
+   "render": "값"
+  },
+  {
+   "word": "닭",
+   "keys": "612554",
+   "taps": 6,
+   "per_char": 6.0,
+   "render": "닭"
+  },
+  {
+   "word": "삶",
+   "keys": "8125500",
+   "taps": 7,
+   "per_char": 7.0,
+   "render": "삶"
+  },
+  {
+   "word": "밟",
+   "keys": "712557",
+   "taps": 6,
+   "per_char": 6.0,
+   "render": "밟"
+  },
+  {
+   "word": "읊",
+   "keys": "035577",
+   "taps": 6,
+   "per_char": 6.0,
+   "render": "읊"
+  },
+  {
+   "word": "없다",
+   "keys": "02178612",
+   "taps": 8,
+   "per_char": 4.0,
+   "render": "없다"
+  },
+  {
+   "word": "오늘 날씨 좋다",
+   "keys": "0235355␣512558881␣92388612",
+   "taps": 26,
+   "per_char": 4.33,
+   "render": "오늘 날씨 좋다"
+  },
+  {
+   "word": "회의 일정 확인 부탁드립니다",
+   "keys": "88231031␣01559210␣8823124015␣7326612463551751612",
+   "taps": 48,
+   "per_char": 4.0,
+   "render": "회의 일정 확인 부탁드립니다"
+  }
+ ],
+ "bs": [
+  {
+   "keys": "4125⌫",
+   "result": "가",
+   "expect": "가",
+   "ok": true
+  },
+  {
+   "keys": "4231⌫",
+   "result": "고",
+   "expect": "고",
+   "ok": true
+  },
+  {
+   "keys": "4124·8⌫",
+   "result": "각",
+   "expect": "각",
+   "ok": true
+  },
+  {
+   "keys": "44⌫",
+   "result": "",
+   "expect": "",
+   "ok": true
+  },
+  {
+   "keys": "512⌫",
+   "result": "니",
+   "expect": "니",
+   "ok": true
+  }
+ ],
+ "full": {
+  "total": 11172,
+  "avg_taps": 7.026,
+  "dist": {
+   "2": 14,
+   "3": 147,
+   "4": 584,
+   "5": 1390,
+   "6": 2205,
+   "7": 2500,
+   "8": 2126,
+   "9": 1338,
+   "10": 632,
+   "11": 196,
+   "12": 40
+  }
+ },
+ "compare": {
+  "rows": [
+   {
+    "text": "오늘 회의 자료 공유드립니다",
+    "cheonjiin": 45,
+    "dubeolsik": 32,
+    "ratio": 1.41
+   },
+   {
+    "text": "내일 아침 아홉시까지 사무실로 와주세요",
+    "cheonjiin": 68,
+    "dubeolsik": 44,
+    "ratio": 1.55
+   },
+   {
+    "text": "감사합니다 좋은 하루 되세요",
+    "cheonjiin": 49,
+    "dubeolsik": 32,
+    "ratio": 1.53
+   },
+   {
+    "text": "지하철 막차 시간 확인했어요",
+    "cheonjiin": 55,
+    "dubeolsik": 35,
+    "ratio": 1.57
+   },
+   {
+    "text": "우리 같이 밥 먹을래",
+    "cheonjiin": 34,
+    "dubeolsik": 23,
+    "ratio": 1.48
+   },
+   {
+    "text": "괜찮으면 전화 주세요",
+    "cheonjiin": 45,
+    "dubeolsik": 28,
+    "ratio": 1.61
+   }
+  ],
+  "total_cheonjiin": 296,
+  "total_dubeolsik": 194,
+  "ratio": 1.526
+ },
+ "timeout": {
+  "count": 3,
+  "keys": 299,
+  "pct": 1.0
+ }
+}

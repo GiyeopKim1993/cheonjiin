@@ -1,0 +1,434 @@
+name: CI
+
+# 천지인 IME 검증 게이트 (docs/04-기능명세.md F9)
+#   - 4개 언어 코어가 11,172자 키 시퀀스까지 바이트 단위로 동일해야 통과
+#   - 공용 테스트 벡터 71건은 모든 구현이 통과해야 함
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ───────── 1. 코어: 4개 언어 + 교차 동일성 ─────────
+  core:
+    name: 코어 (Python·JS·Java·C++)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: 전체 검증 (코어 4종 + 셸 4종 + 사전 + 해시 대조)
+        run: ./run-all-tests.sh
+
+      - name: 교차 언어 해시 아티팩트
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-language-dumps
+          path: /tmp/xl/*.txt
+          if-no-files-found: ignore
+
+  # ───────── 2. 웹 E2E (실제 브라우저) ─────────
+  device:
+    name: 물리 키보드 브리지 (원시 키이벤트 -> IME)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: 프로토콜 상수 동기화 (C 헤더 ↔ JS)
+        run: |
+          # 펌웨어와 IME 가 같은 숫자를 두 곳에 적어둔다. 어긋나면
+          # 컴파일도 되고 테스트도 통과하지만 실기기에서만 조용히 깨진다.
+          cd ime/device && node test-proto-sync.js
+
+      - name: 브리지 로직 (조합·멀티탭·한자·패킷유실)
+        run: cd ime/device && node test-bridge.js
+
+      - name: USB 전송 계층 (복합장치 인터페이스 선택)
+        run: cd ime/device && node test-transport.js
+
+      - name: 데모 구동 (장치 없이 실제 조합)
+        run: |
+          cd ime/device
+          OUT=$(timeout 60 node cuime-device.js --demo 2>&1 | tr '\r' '\n' | tail -20)
+          echo "$OUT"
+          echo "$OUT" | grep -q '한\[글\]' \
+            || { echo "❌ 데모가 '한글' 을 조합하지 못했다"; exit 1; }
+          echo "✅ 데모 조합 확인"
+
+  e2e:
+    name: E2E (Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: puppeteer 설치
+        working-directory: ime/e2e
+        run: npm i -D puppeteer@23
+      - name: 웹 IME 서버 기동
+        run: |
+          python3 -m http.server 7000 --directory ime &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:7000/ >/dev/null && break || sleep 1
+          done
+      - name: E2E 실행 (28건)
+        working-directory: ime/e2e
+        run: node e2e.js
+      - name: 스크린샷
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ime-screenshot
+          path: assets/ime-screenshot.png
+          if-no-files-found: ignore
+
+  # ───────── 3. Android APK ─────────
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+
+      # aapt2/javac/d8/apksigner 직접 호출. Gradle 은 AGP 플러그인 해석에
+      # 실패했고(Plugin 'com.android.application' not found), 데몬·네트워크
+      # 의존도 크다. 로컬에서 검증된 스크립트를 그대로 쓴다.
+      - name: APK 빌드 (SDK 툴 직접)
+        working-directory: ime/android
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: ./build-apk.sh
+
+      - name: APK 검증 (서명·IME 서비스 등록)
+        working-directory: ime/android
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/apksigner" verify --print-certs build-apk/cuime-debug.apk
+          "$BT/aapt2" dump xmltree build-apk/cuime-debug.apk --file AndroidManifest.xml \
+            | grep -q "android.view.InputMethod" \
+            || { echo "❌ IME 서비스 미등록"; exit 1; }
+          echo "✅ 서명·IME 서비스 등록 확인"
+
+      - name: APK 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-debug-apk
+          path: ime/android/build-apk/cuime-debug.apk
+          if-no-files-found: error
+
+  # ───────── 4. Windows TSF DLL ─────────
+  windows-tsf:
+    name: Windows TSF (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: 코어·셸 검증 (MSVC)
+        working-directory: ime/native
+        shell: cmd
+        run: |
+          echo === core ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_core.exe test.cpp || exit /b 1
+          test_core.exe || (echo [FAIL] test_core & exit /b 1)
+          echo === shell ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /Fe:test_shell.exe test_shell.cpp || exit /b 1
+          test_shell.exe || (echo [FAIL] test_shell & exit /b 1)
+          echo === tsf stub ===
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /DCUIME_TSF_STUB /Fe:test_tsf.exe tsf_textservice.cpp /link /STACK:8388608 || exit /b 1
+          test_tsf.exe || (echo [FAIL] test_tsf & exit /b 1)
+
+      - name: TSF DLL 빌드
+        working-directory: ime/native
+        shell: cmd
+        run: |
+          cl /nologo /std:c++17 /EHsc /utf-8 /bigobj /LD /Fe:cuime.dll tsf_textservice.cpp ^
+             /link /STACK:8388608 ole32.lib oleaut32.lib advapi32.lib user32.lib || exit /b 1
+
+      - name: DLL 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-tsf-dll
+          path: ime/native/cuime.dll
+          if-no-files-found: error
+
+  # ───────── 5. Linux IBus 엔진 ─────────
+  linux-ibus:
+    name: Linux IBus
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ibus 개발 패키지
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libibus-1.0-dev pkg-config
+      - name: IBus 엔진 빌드
+        working-directory: ime/native
+        run: |
+          g++ -std=c++17 -O2 -I. -DCUIME_IBUS_MAIN ibus_engine.cpp \
+              $(pkg-config --cflags --libs ibus-1.0) -o cuime-ibus
+          ls -la cuime-ibus
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cuime-ibus
+          path: ime/native/cuime-ibus
+          if-no-files-found: error
+
+  # ───────── 6. macOS IMK ─────────
+  macos-imk:
+    name: macOS IMK
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 코어·셸 검증 (clang)
+        working-directory: ime/native
+        run: |
+          clang++ -std=c++17 -O2 -I. -o test_core test.cpp && ./test_core
+          clang++ -std=c++17 -O2 -I. -o test_shell test_shell.cpp && ./test_shell
+      - name: IMK 브리지 검증
+        working-directory: ime/macos
+        run: |
+          clang++ -std=c++17 -O2 -I../native -DCUIME_IMK_TEST -DCUIME_IMK_NO_OBJC \
+                  -x c++ -o test_imk CheonjiinBridge.mm
+          ./test_imk
+      - name: IMK Objective-C++ 컴파일 (실제 프레임워크)
+        working-directory: ime/macos
+        run: |
+          clang++ -std=c++17 -fobjc-arc -I../native -c CheonjiinBridge.mm -o /tmp/bridge.o
+          echo "✅ Objective-C++ 컴파일 통과"
+
+  # ───────── 7. 사전 재생성 검증 ─────────
+  dict:
+    name: 한자 사전 재현성
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: 생성물이 커밋본과 일치하는가
+        run: |
+          python3 tools/gen_hanja.py
+          git diff --exit-code -- \
+            ime/core/hanja.js \
+            ime/android/src/main/java/com/cuime/HanjaDict.java \
+            ime/native/hanja.hpp \
+            || { echo "❌ 사전 생성물이 spec/hanja-dict.json 과 어긋납니다. tools/gen_hanja.py 실행 후 커밋하세요."; exit 1; }
+          echo "✅ 사전 생성물 최신"
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: 대용량 사전 컴파일 (상수 풀 한계 회귀 방지)
+        run: |
+          mkdir -p /tmp/dictbuild
+          javac -encoding UTF-8 -d /tmp/dictbuild \
+            ime/android/src/main/java/com/cuime/HanjaDict.java
+          echo "✅ HanjaDict 컴파일 통과 (단어 3만 규모)"
+
+      - name: 동음이의어 1순위 정확도 (정답 세트 회귀 방지)
+        run: |
+          # 정렬 가중치를 건드렸을 때 '가정 -> 假定' 같은 퇴행을 잡는다.
+          # 덤프 없이 커밋된 사전만으로 정답 세트를 대조한다.
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open('spec/hanja-dict.json', encoding='utf-8'))
+          w = d['words']
+          truth = {}
+          for ln in open('spec/word-rank-truth.tsv', encoding='utf-8'):
+              ln = ln.strip()
+              if not ln or ln.startswith('#'):
+                  continue
+              k, v = ln.split('\t')
+              truth[k] = v
+          miss, n = [], 0
+          for k, want in truth.items():
+              v = w.get(k)
+              if not v:
+                  continue
+              n += 1
+              got = v[0] if isinstance(v, list) else v
+              if got != want:
+                  miss.append(f"{k}: {got} (기대 {want})")
+          acc = (n - len(miss)) / n * 100 if n else 0
+          print(f"1순위 정확도 {n-len(miss)}/{n} ({acc:.1f}%)")
+          for m in miss:
+              print("   ✗", m)
+          # 현재 45/48 = 93.8%. 90% 아래로 떨어지면 정렬이 망가진 것이다.
+          if acc < 90:
+              print(f"❌ 정확도 {acc:.1f}% < 90% — 정렬 가중치 회귀")
+              sys.exit(1)
+          print("✅ 동음이의어 정렬 정상")
+          PYEOF
+
+      - name: 다중 후보 무결성
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys
+          d = json.load(open('spec/hanja-dict.json', encoding='utf-8'))
+          w = d['words']
+          bad = []
+          for k, v in w.items():
+              if not isinstance(v, list) or not v:
+                  bad.append((k, 'list 아님/빈 배열'))
+              elif len(v) != len(set(v)):
+                  bad.append((k, '후보 중복'))
+              elif any(len(c) != len(k) for c in v):
+                  bad.append((k, '길이 불일치'))
+          multi = sum(1 for v in w.values() if isinstance(v, list) and len(v) > 1)
+          tot = sum(len(v) for v in w.values() if isinstance(v, list))
+          print(f"표제어 {len(w):,} / 총 후보 {tot:,} / 다중 후보 {multi:,}")
+          if bad:
+              print(f"❌ 이상 {len(bad)}건")
+              for k, why in bad[:10]:
+                  print("   ", k, why)
+              sys.exit(1)
+          if multi < 2000:
+              print(f"❌ 다중 후보 {multi} < 2000 — 후보가 유실됐다")
+              sys.exit(1)
+          print("✅ 다중 후보 무결")
+          PYEOF
+
+  firmware:
+    name: 펌웨어 (core + app + HAL + 보드 포트)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: 테이블이 참조 구현과 일치하는가
+        run: |
+          python3 tools/gen_firmware_tables.py
+          git diff --exit-code -- firmware/core/cuime_tables.h \
+            || { echo "❌ cuime_tables.h 가 참조 구현과 어긋납니다. tools/gen_firmware_tables.py 실행 후 커밋하세요."; exit 1; }
+          echo "✅ 펌웨어 테이블 최신"
+
+      - name: 전체 검증 (시뮬레이터 + 포트 정합성 + 전수 대조)
+        run: cd firmware && ./build.sh
+
+      - name: ARM 크로스 컴파일 (실 툴체인)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-arm-none-eabi
+          # -c 다중 입력에는 -o 를 쓸 수 없다. 파일별로 컴파일한다.
+          mkdir -p /tmp/armobj
+          for CPU in cortex-m4 cortex-m0plus; do
+            for SRC in firmware/core/cuime.c firmware/app/cuime_app.c \
+                       firmware/port/stm32/hal_stm32.c firmware/port/rp2040/hal_rp2040.c; do
+              arm-none-eabi-gcc -c -std=c99 -Os -Wall -Wextra -Werror \
+                -mcpu=$CPU -mthumb -DCUIME_PORT_STUB \
+                -Ifirmware/core -Ifirmware/hal -Ifirmware/app \
+                "$SRC" -o "/tmp/armobj/$(basename $SRC .c).$CPU.o"
+            done
+            echo "✅ $CPU 크로스 컴파일 통과 (-Werror)"
+          done
+
+      - name: 코드 크기 (플래시 예산)
+        run: |
+          arm-none-eabi-size -t /tmp/armobj/*.cortex-m0plus.o
+
+      - name: STM32F411 실기기 펌웨어 (링크까지 = 플래시 가능한 바이너리)
+        run: |
+          # 위 단계는 .o 까지만 만든다. 여기서는 스타트업·링커스크립트를 포함해
+          # 실제로 보드에 구울 수 있는 .bin/.hex 를 만들고, 정적 검증과
+          # 호스트 로직 검증(E2E 조합 테스트)까지 돌린다.
+          cd firmware/port/stm32f411
+          ./build.sh
+          echo "=== 산출물 ==="
+          ls -la build/cuime-f411.bin build/cuime-f411.hex build/cuime-f411.elf
+
+      - name: STM32F411 빌드 변형 (HSE / USB HID)
+        run: |
+          cd firmware/port/stm32f411
+          for CFG in "USE_HSE=1" "USB_HID=1" "USE_HSE=1 USB_HID=1"; do
+            echo "=== $CFG ==="
+            env $CFG ./build.sh > /tmp/v.log 2>&1 \
+              || { echo "[FAIL] $CFG"; tail -30 /tmp/v.log; exit 1; }
+            grep -E "FLASH " /tmp/v.log | head -1
+          done
+          echo "✅ 4개 빌드 변형 모두 통과"
+
+      - name: 펌웨어 바이너리 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuime-stm32f411
+          path: |
+            firmware/port/stm32f411/build/cuime-f411.bin
+            firmware/port/stm32f411/build/cuime-f411.hex
+            firmware/port/stm32f411/build/cuime-f411.elf
+
+  # ───────── 9. iOS 키보드 확장 ─────────
+  ios:
+    name: iOS 키보드 확장 (Swift)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+
+      - name: Swift 버전
+        run: swift --version
+
+      - name: 코어 전수 동일성 (Swift == Python)
+        run: |
+          mkdir -p /tmp/xl
+          cd ime/ios
+          swiftc -O -o /tmp/xl/swdump CheonjiinCore.swift test/xldump/main.swift
+          /tmp/xl/swdump /tmp/xl/swift.txt
+          cd ../../tools
+          python3 -c "
+          from engine import CHO,JUNG,JONG,compose
+          from encoder import encode
+          for c in CHO:
+            for v in JUNG:
+              for j in JONG:
+                ch=compose(c,v,j.strip())
+                print(ch+'\t'+' '.join('KRIGHT' if k=='TIMEOUT' else k for k in encode(ch)))
+          " > /tmp/xl/py.txt
+          diff /tmp/xl/py.txt /tmp/xl/swift.txt \
+            && echo "✅ Swift == Python 전수 동일" \
+            || { echo "❌ 코어 불일치"; exit 1; }
+
+      - name: CompositionBridge 검증 (marked text / 폴백 동치)
+        working-directory: ime/ios
+        run: |
+          swiftc -O -o /tmp/bridge CheonjiinCore.swift CompositionBridge.swift test/bridge/main.swift
+          /tmp/bridge
+
+      - name: iOS 실제 빌드 (UIKit, arm64)
+        working-directory: ime/ios
+        run: |
+          # -emit-object 는 파일마다 .o 를 만들므로 -o 를 함께 쓸 수 없다
+          # (error: cannot specify -o when generating multiple output files).
+          # 출력 디렉터리를 지정하고 -c 로 컴파일한다.
+          mkdir -p /tmp/iosobj
+          xcrun --sdk iphoneos swiftc -target arm64-apple-ios13.0 \
+            -sdk "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -c -O -module-name CuimeKeyboard \
+            CheonjiinCore.swift CompositionBridge.swift \
+            KeypadView.swift KeyboardViewController.swift
+          ls -la *.o
+          echo "✅ 실제 UIKit 기반 iOS arm64 컴파일 통과"
+
+      - name: Info.plist 검증
+        working-directory: ime/ios
+        run: |
+          python3 -c "
+          import plistlib
+          d=plistlib.load(open('Info.plist','rb'))
+          e=d['NSExtension']
+          assert e['NSExtensionPointIdentifier']=='com.apple.keyboard-service'
+          assert 'KeyboardViewController' in e['NSExtensionPrincipalClass']
+          assert e['NSExtensionAttributes']['RequestsOpenAccess'] is False
+          print('✅ Info.plist 유효')
+          "
